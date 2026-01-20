@@ -1,0 +1,1 @@
+cp /home/ylxiao/ws222/u96_dma/project_1/project_1.gen/sources_1/bd/design_1/ip/design_1_axi_smc_0/bd_0/synth/bd_afc3.v . -rf
