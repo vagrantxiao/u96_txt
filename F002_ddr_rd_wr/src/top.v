@@ -16,7 +16,8 @@ module top(
   output [0:0]	DDR4_odt,
   output [0:0]	DDR4_reset_n,
   input [0:0]	sys_clk_n,
-  input [0:0]	sys_clk_p
+  input [0:0]	sys_clk_p,
+  output reg    led
     );
 	
 	
@@ -250,4 +251,27 @@ design_1_wrapper ps_block
 	.axi_resetn(rst_n),
 	.axi_clk(M_AXI_ACLK)
 );
+
+reg [31:0] ar_incr;
+reg [31:0] aw_incr;
+reg [31:0] ar_bp;
+reg [31:0] aw_bp;
+
+always @(posedge M_AXI_ACLK) begin
+    if (!rst_n) begin
+        ar_incr <= 32'd0;
+        aw_incr <= 32'd0;
+        ar_bp   <= 32'd0;
+        aw_bp   <= 32'd0;
+        led     <= 1'b0;
+    end else begin
+        ar_incr <= ar_incr + 1;
+        aw_incr <= aw_incr + 1;
+        ar_bp   <= ar_bp + 1;
+        aw_bp   <= aw_bp + 1;
+        led     <= ar_incr || aw_incr || ar_bp || aw_bp;
+    end
+end
+
+
 endmodule
