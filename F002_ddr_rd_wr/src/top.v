@@ -265,11 +265,32 @@ always @(posedge M_AXI_ACLK) begin
         aw_bp   <= 32'd0;
         led     <= 1'b0;
     end else begin
-        ar_incr <= ar_incr + 1;
-        aw_incr <= aw_incr + 1;
-        ar_bp   <= ar_bp + 1;
-        aw_bp   <= aw_bp + 1;
-        led     <= ar_incr || aw_incr || ar_bp || aw_bp;
+        if (M_AXI_ARREADY && M_AXI_ARVALID) begin
+            ar_incr <= ar_incr + 1;
+        end else begin
+            ar_incr <= ar_incr;
+        end
+        
+        if (M_AXI_AWREADY && M_AXI_AWVALID) begin
+            aw_incr <= aw_incr + 1;
+        end else begin
+            aw_incr <= aw_incr;
+        end
+        
+        if ((!M_AXI_ARREADY) && M_AXI_ARVALID) begin
+            ar_bp   <= ar_bp + 1;
+        end else begin
+            ar_bp   <= ar_bp;
+        end
+        
+        
+        if ((!M_AXI_AWREADY) && M_AXI_AWVALID) begin
+            aw_bp   <= aw_bp + 1;
+        end else begin
+            aw_bp   <= aw_bp;
+        end
+        
+        led <= ar_incr || aw_incr || ar_bp || aw_bp;
     end
 end
 
