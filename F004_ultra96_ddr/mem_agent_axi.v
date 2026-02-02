@@ -9,7 +9,11 @@
 //--------------------------------------------------------------------------------
 `timescale 1 ps / 1 ps
 
-module mem_agent_axi(
+module mem_agent_axi #(
+  parameter RD_ADDR_BASE = 32'h4000_0000,
+  parameter RD_ADDR_HIGH = 32'h5000_0000
+  
+  )(
   // Reset, Clock
     input         ARESETN
   , input         ACLK
@@ -24,7 +28,7 @@ module mem_agent_axi(
   , output [3:0]  M_AXI_AWCACHE  // Cache: Fiex 2'b0011
   , output [2:0]  M_AXI_AWPROT   // Protect: Fixed 2'b000
   , output [3:0]  M_AXI_AWQOS    // QoS: Fixed 2'b0000
-  , output [0:0]  M_AXI_AWUSER   // User: Fixed 32'd0
+  , output [7:0]  M_AXI_AWUSER   // User: Fixed 32'd0
   , output        M_AXI_AWVALID
   , input         M_AXI_AWREADY
 
@@ -39,7 +43,7 @@ module mem_agent_axi(
   // Master Write Response
   , input [0:0]   M_AXI_BID
   , input [1:0]   M_AXI_BRESP
-  , input [0:0]   M_AXI_BUSER
+  , input [7:0]   M_AXI_BUSER
   , input         M_AXI_BVALID
   , output        M_AXI_BREADY
    
@@ -68,7 +72,20 @@ module mem_agent_axi(
 
 
   , input         r_start_in
+  
+  , output [31:0] rd_req_cnt_out
+  , output [31:0] rd_data_cnt_out
+  , output [31:0] wr_req_cnt_out
+  , output [31:0] wr_data_cnt_out
+  , output [31:0] rd_req_bp_out
+  , output [31:0] wr_req_bp_out
+  , output [31:0] wr_data_bp_out
+  
+  , output [31:0] timestamp_out
+  , output reg [31:0] rd_latency_out
+  
   , output        rd_bit_out
+
 );
 
   localparam AR_IDLE = 1'b0;
@@ -84,7 +101,8 @@ module mem_agent_axi(
   wire        ar_empty;
   reg         ar_rdreq;
 
-
+  wire [31:0] pkt_timestamp;
+  
   assign M_AXI_AWID    = 0;
   assign M_AXI_AWADDR  = 0;
   assign M_AXI_AWLEN   = 0; // Burst Length: 0-255
@@ -113,11 +131,67 @@ module mem_agent_axi(
   assign M_AXI_ARCACHE = 4'b0011;
   assign M_AXI_ARQOS   = 4'b0000;
   assign M_AXI_ARPROT  = 3'b000;
-  assign M_AXI_ARUSER  = 1'b0;
+  assign M_AXI_ARUSER  = 0;
 
   assign M_AXI_ARADDR  =  ar_dout;
   assign M_AXI_ARVALID = ~ar_empty;
 
+  fr_cnt debug_ar_cnt(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_ARVALID && M_AXI_ARREADY   ) 
+    , .cnt   (rd_req_cnt_out                   )
+  );
+
+  fr_cnt debug_r_cnt(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_RVALID && M_AXI_RREADY     ) 
+    , .cnt   (rd_data_cnt_out                  )
+  );
+
+  fr_cnt debug_aw_cnt(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_AWVALID && M_AXI_AWREADY   ) 
+    , .cnt   (wr_req_cnt_out                   )
+  );
+
+  fr_cnt debug_w_cnt(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_WVALID && M_AXI_WREADY     ) 
+    , .cnt   (wr_data_cnt_out                  )
+  );
+
+  fr_cnt debug_ar_bp(
+      .clk   (ACLK                             ) 
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_ARVALID && (~M_AXI_ARREADY)) 
+    , .cnt   (rd_req_bp_out                    )
+  );
+
+  fr_cnt debug_aw_bp(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_AWVALID && (~M_AXI_AWREADY)) 
+    , .cnt   (wr_req_bp_out                    )
+  );
+
+  fr_cnt debug_w_bp(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (M_AXI_WVALID && (~M_AXI_WREADY)  ) 
+    , .cnt   (wr_data_bp_out                   )
+  );
+
+  
+  fr_cnt debug_timestamp(
+      .clk   (ACLK                             )
+    , .rst_n (ARESETN                          )
+    , .en    (1'b1                             ) 
+    , .cnt   (timestamp_out                    )
+  );
 
   xpm_fifo_sync #(
       .DOUT_RESET_VALUE  ("0"       )
@@ -140,6 +214,40 @@ module mem_agent_axi(
     , .wr_clk            (ACLK      )
   );
 
+  always @(posedge ACLK) begin
+    if(M_AXI_RVALID) begin
+      rd_latency_out <= timestamp_out - pkt_timestamp;
+    end else begin
+      rd_latency_out <= rd_latency_out;
+    end
+    
+    if (~ARESETN) begin
+      rd_latency_out <= 0;
+    end
+  end
+    
+  
+  xpm_fifo_sync #(
+      .DOUT_RESET_VALUE  ("0"       )
+    , .FIFO_MEMORY_TYPE  ("auto"    )
+    , .FIFO_READ_LATENCY (0         )
+    , .FIFO_WRITE_DEPTH  (1024      )
+    , .READ_DATA_WIDTH   (32        )
+    , .USE_ADV_FEATURES  ("0707"    )
+    , .WRITE_DATA_WIDTH  (32        )
+  ) rd_timestamp_fifo (
+      .dout              (pkt_timestamp   )
+    , .empty             (                ) // should never empty
+    , .rd_en             (M_AXI_RVALID    )
+
+    , .din               (timestamp_out   )
+    , .full              (                ) // not used. should never full
+    , .wr_en             (ar_wrreq        )
+
+    , .rst               (~ARESETN        )
+    , .wr_clk            (ACLK            )
+  );
+  
   always @(*) begin
     ar_wrreq   = 0;
 
@@ -169,7 +277,11 @@ module mem_agent_axi(
     endcase
 
     if (ar_wrreq) begin
-      ar_din_nxt = ar_din_ff + 8;
+      if (ar_din_ff == RD_ADDR_HIGH) begin
+        ar_din_nxt = RD_ADDR_BASE;
+      end else begin
+        ar_din_nxt = ar_din_ff + 8;
+      end
     end
   end
 
@@ -178,13 +290,31 @@ module mem_agent_axi(
     ar_din_ff   <= ar_din_nxt;
     ar_st_ff    <= ar_st_nxt;
     if (~ARESETN) begin
-      ar_din_ff <= 0;
+      ar_din_ff <= RD_ADDR_BASE;
       ar_st_ff  <= 0;
     end
   end
 
   assign M_AXI_RREADY  = 1'b1;
   assign rd_bit_out    = |{M_AXI_RID, M_AXI_RDATA, M_AXI_RRESP, M_AXI_RLAST, M_AXI_RUSER, M_AXI_RVALID};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
   assign M_AXI_AWID    = 0;
   assign M_AXI_AWADDR  = 0;

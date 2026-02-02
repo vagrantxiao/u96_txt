@@ -11,18 +11,18 @@ wire        M_AXI_AWLOCK;
 wire [3:0]  M_AXI_AWCACHE;
 wire [2:0]  M_AXI_AWPROT;
 wire [3:0]  M_AXI_AWQOS;
-wire [0:0]  M_AXI_AWUSER;
+wire [7:0]  M_AXI_AWUSER;
 wire        M_AXI_AWVALID;
 reg         M_AXI_AWREADY;
 wire [63:0] M_AXI_WDATA;
 wire [7:0]  M_AXI_WSTRB;
 wire        M_AXI_WLAST;
-wire [0:0]  M_AXI_WUSER;
+wire [7:0]  M_AXI_WUSER;
 wire        M_AXI_WVALID;
 reg         M_AXI_WREADY;
 reg [0:0]   M_AXI_BID;
 reg [1:0]   M_AXI_BRESP;
-reg [0:0]   M_AXI_BUSER;
+reg [7:0]   M_AXI_BUSER;
 reg         M_AXI_BVALID;
 wire        M_AXI_BREADY;
 wire [0:0]  M_AXI_ARID;
@@ -34,14 +34,14 @@ wire [1:0]  M_AXI_ARLOCK;
 wire [3:0]  M_AXI_ARCACHE;
 wire [2:0]  M_AXI_ARPROT;
 wire [3:0]  M_AXI_ARQOS;
-wire [0:0]  M_AXI_ARUSER;
+wire [7:0]  M_AXI_ARUSER;
 wire        M_AXI_ARVALID;
 reg         M_AXI_ARREADY;
 reg [0:0]   M_AXI_RID;
 reg [63:0]  M_AXI_RDATA;
 reg [1:0]   M_AXI_RRESP;
 reg         M_AXI_RLAST;
-reg [0:0]   M_AXI_RUSER;
+reg [7:0]   M_AXI_RUSER;
 reg         M_AXI_RVALID;
 wire        M_AXI_RREADY;
 reg         r_start_in;
@@ -65,7 +65,6 @@ initial begin
   M_AXI_RRESP   = 1;
   M_AXI_RLAST   = 1;
   M_AXI_RUSER   = 0;
-  M_AXI_RVALID  = 0;
   r_start_in    = 0;
   #1007
   ARESETN       = 1;
@@ -126,7 +125,12 @@ mem_agent_axi dut1(
   , .rd_bit_out    (rd_bit_out    )
 );
 
-
+always @(posedge ACLK) begin
+  M_AXI_RVALID   <=   M_AXI_ARVALID;
+  if (~ARESETN) begin
+    M_AXI_RVALID <= 0;
+  end
+end
 
 
 endmodule

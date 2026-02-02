@@ -1,4 +1,4 @@
-module fr_cnt
+module fr_cnt(
     input             clk
   , input             rst_n
   , input             en
