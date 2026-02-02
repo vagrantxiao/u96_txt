@@ -113,10 +113,8 @@ set_property PACKAGE_PIN P26 [get_ports {DDR4_dqs_t[7]}]
 set_property PACKAGE_PIN N27 [get_ports {DDR4_dqs_c[7]}]
 set_property PACKAGE_PIN AC22 [get_ports {DDR4_odt[0]}]
 set_property PACKAGE_PIN AC24 [get_ports {DDR4_reset_n[0]}]
-set_property PACKAGE_PIN AB23 [get_ports {sys_clk_p[0]}]
-set_property PACKAGE_PIN AC23 [get_ports {sys_clk_n[0]}]
 
-set_property IOSTANDARD DIFF_SSTL12 [get_ports {sys_clk_n[0]}]
-set_property IOSTANDARD DIFF_SSTL12 [get_ports {sys_clk_p[0]}]
+set_property IOSTANDARD LVDS15 [get_ports {sys_clk_n[0]}]
 create_clock -period 5.000 -name sys_clk -waveform {0.000 2.500} [get_ports {sys_clk_p[0]}]
+
 
