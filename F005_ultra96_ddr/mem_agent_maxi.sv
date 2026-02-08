@@ -10,7 +10,7 @@
 `timescale 1 ps / 1 ps
 `default_nettype none
 
-module mem_agent_axi
+module mem_agent_maxi
   import mem_agent_types::*;
 #(
     parameter ADDR_WIDTH         = AXI_MASTER_ADDR_WIDTH
@@ -95,30 +95,36 @@ module mem_agent_axi
   , output logic [DBG_CNT_BITS-1:0] rd_latency_out
 );
 
-if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_ar( .ARESETN(ARESETN), .ACLK(ACLK));
-if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_r ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_ar( .ARESETN(ARESETN), .ACLK(ACLK));
+if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_r ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_aw( .ARESETN(ARESETN), .ACLK(ACLK));
+if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_w ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_b ( .ARESETN(ARESETN), .ACLK(ACLK));
 
-  // Master Read Address
-  assign M_AXI_ARID            = maxi_ar.M_AXI_ARID;
-  assign M_AXI_ARADDR          = maxi_ar.M_AXI_ARADDR;
-  assign M_AXI_ARLEN           = maxi_ar.M_AXI_ARLEN;
-  assign M_AXI_ARSIZE          = maxi_ar.M_AXI_ARSIZE;
-  assign M_AXI_ARBURST         = maxi_ar.M_AXI_ARBURST;
-  assign M_AXI_ARLOCK          = maxi_ar.M_AXI_ARLOCK;
-  assign M_AXI_ARCACHE         = maxi_ar.M_AXI_ARCACHE;
-  assign M_AXI_ARPROT          = maxi_ar.M_AXI_ARPROT;
-  assign M_AXI_ARQOS           = maxi_ar.M_AXI_ARQOS;
-  assign M_AXI_ARUSER          = maxi_ar.M_AXI_ARUSER;
-  assign M_AXI_ARVALID         = maxi_ar.M_AXI_ARVALID;
-  assign maxi_ar.M_AXI_ARREADY = M_AXI_ARREADY;
-  
-  assign maxi_r.M_AXI_RID      = M_AXI_RID;
-  assign maxi_r.M_AXI_RDATA    = M_AXI_RDATA;
-  assign maxi_r.M_AXI_RRESP    = M_AXI_RRESP;
-  assign maxi_r.M_AXI_RLAST    = M_AXI_RLAST;
-  assign maxi_r.M_AXI_RUSER    = M_AXI_RUSER;
-  assign maxi_r.M_AXI_RVALID   = M_AXI_RVALID;
-  assign M_AXI_RREADY          = maxi_r.M_AXI_RREADY;
+logic [DBG_CNT_BITS-1:0] timestamp_net;
+logic [DBG_CNT_BITS-1:0] rd_data_timestamp_net;
+
+// Master Read Address
+assign M_AXI_ARID            = maxi_ar.M_AXI_ARID;
+assign M_AXI_ARADDR          = maxi_ar.M_AXI_ARADDR;
+assign M_AXI_ARLEN           = maxi_ar.M_AXI_ARLEN;
+assign M_AXI_ARSIZE          = maxi_ar.M_AXI_ARSIZE;
+assign M_AXI_ARBURST         = maxi_ar.M_AXI_ARBURST;
+assign M_AXI_ARLOCK          = maxi_ar.M_AXI_ARLOCK;
+assign M_AXI_ARCACHE         = maxi_ar.M_AXI_ARCACHE;
+assign M_AXI_ARPROT          = maxi_ar.M_AXI_ARPROT;
+assign M_AXI_ARQOS           = maxi_ar.M_AXI_ARQOS;
+assign M_AXI_ARUSER          = maxi_ar.M_AXI_ARUSER;
+assign M_AXI_ARVALID         = maxi_ar.M_AXI_ARVALID;
+assign maxi_ar.M_AXI_ARREADY = M_AXI_ARREADY;
+
+assign maxi_r.M_AXI_RID      = M_AXI_RID;
+assign maxi_r.M_AXI_RDATA    = M_AXI_RDATA;
+assign maxi_r.M_AXI_RRESP    = M_AXI_RRESP;
+assign maxi_r.M_AXI_RLAST    = M_AXI_RLAST;
+assign maxi_r.M_AXI_RUSER    = M_AXI_RUSER;
+assign maxi_r.M_AXI_RVALID   = M_AXI_RVALID;
+assign M_AXI_RREADY          = maxi_r.M_AXI_RREADY;
 
 
 ar_ch #(
@@ -145,6 +151,121 @@ r_ch_inst(
   , .maxi_r             (maxi_r             )
 );
 
+fr_cnt #(
+  .DATA_WIDTH(32)
+)
+debug_timestamp(
+    .clk       (ACLK                         )
+  , .rst_n     (ARESETN                      )
+  , .en_in     (1'b1                         ) 
+  , .cnt_out   (timestamp_net                )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_ar_cnt(
+    .clk       (ACLK                                           )
+  , .rst_n     (ARESETN                                        )
+  , .en_in     (maxi_ar.M_AXI_ARVALID && maxi_ar.M_AXI_ARREADY ) 
+  , .cnt_out   (rd_req_cnt_out                                 )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_r_cnt(
+    .clk       (ACLK                                           )
+  , .rst_n     (ARESETN                                        )
+  , .en_in     (maxi_r.M_AXI_RVALID && maxi_r.M_AXI_RREADY     ) 
+  , .cnt_out   (rd_data_cnt_out                                )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_aw_cnt(
+    .clk       (ACLK                                           )
+  , .rst_n     (ARESETN                                        )
+  , .en_in     (maxi_aw.M_AXI_AWVALID && maxi_aw.M_AXI_AWREADY ) 
+  , .cnt_out   (wr_req_cnt_out                                 )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_w_cnt(
+    .clk       (ACLK                                           )
+  , .rst_n     (ARESETN                                        )
+  , .en_in     (maxi_w.M_AXI_WVALID && maxi_w.M_AXI_WREADY     ) 
+  , .cnt_out   (wr_data_cnt_out                                )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_ar_bp(
+    .clk       (ACLK                                             ) 
+  , .rst_n     (ARESETN                                          )
+  , .en_in     (maxi_ar.M_AXI_ARVALID && (~maxi_ar.M_AXI_ARREADY)) 
+  , .cnt_out   (rd_req_bp_out                                    )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_aw_bp(
+    .clk       (ACLK                                             )
+  , .rst_n     (ARESETN                                          )
+  , .en_in     (maxi_aw.M_AXI_AWVALID && (~maxi_aw.M_AXI_AWREADY)) 
+  , .cnt_out   (wr_req_bp_out                                    )
+);
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_w_bp(
+    .clk       (ACLK                                           )
+  , .rst_n     (ARESETN                                        )
+  , .en_in     (maxi_w.M_AXI_WVALID && (~maxi_w.M_AXI_WREADY)  ) 
+  , .cnt_out   (wr_data_bp_out                                 )
+);
+
+  
+xpm_fifo_sync #(
+    .DOUT_RESET_VALUE  ("0"         )
+  , .FIFO_MEMORY_TYPE  ("auto"      )
+  , .FIFO_READ_LATENCY (0           )
+  , .FIFO_WRITE_DEPTH  (1024        )
+  , .READ_DATA_WIDTH   (DBG_CNT_BITS)
+  , .USE_ADV_FEATURES  ("0707"      )
+  , .WRITE_DATA_WIDTH  (32          )
+) rd_timestamp_fifo (
+    .dout              (rd_data_timestamp_net                         ) 
+  , .empty             (                                              ) // should never empty
+  , .rd_en             (maxi_r.M_AXI_RVALID && maxi_r.M_AXI_RREADY    )
+
+  , .din               (timestamp_net                                 )
+  , .full              (                                              ) // not used. should never full
+  , .wr_en             (maxi_ar.M_AXI_ARVALID && maxi_ar.M_AXI_ARREADY)
+
+  , .rst               (~ARESETN                                      )
+  , .wr_clk            (ACLK                                          )
+);
+
+always_ff @(posedge ACLK) begin
+  if(maxi_r.M_AXI_RVALID && maxi_r.M_AXI_RREADY) begin
+    rd_latency_out <= timestamp_net - rd_data_timestamp_net;
+  end else begin
+    rd_latency_out <= rd_latency_out;
+  end
+  
+  if (~ARESETN) begin
+    rd_latency_out <= 0;
+  end
+end
+
+assign timestamp_out = timestamp_net;
 
 endmodule
 

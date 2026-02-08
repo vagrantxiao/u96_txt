@@ -1,4 +1,8 @@
-module test;
+module test();
+
+parameter RD_LATENCY = 10;
+
+
 
 reg         ARESETN;
 reg         ACLK;
@@ -47,6 +51,7 @@ wire        M_AXI_RREADY;
 reg         r_start_in;
 wire        rd_bit_out;
 
+reg [RD_LATENCY-1:0] hs_shifter;
 
 always #5 ACLK = ~ACLK;
 
@@ -61,7 +66,6 @@ initial begin
   M_AXI_BVALID  = 0;
   M_AXI_ARREADY = 1;
   M_AXI_RID     = 1;
-  M_AXI_RDATA   = 1;
   M_AXI_RRESP   = 1;
   M_AXI_RLAST   = 1;
   M_AXI_RUSER   = 0;
@@ -73,10 +77,14 @@ initial begin
   #10
   r_start_in    = 1'b0;
   #10_000
+  M_AXI_ARREADY = 0;
+  #10_000
+  M_AXI_ARREADY = 1;
+  #10_000
   $finish();
 end
 
-mem_agent_axi dut1(
+mem_agent_maxi dut1(
     .ARESETN       (ARESETN       )
   , .ACLK          (ACLK          )
   , .M_AXI_AWID    (M_AXI_AWID    )
@@ -126,9 +134,12 @@ mem_agent_axi dut1(
 );
 
 always @(posedge ACLK) begin
-  M_AXI_RVALID   <=   M_AXI_ARVALID;
+  {M_AXI_RVALID, hs_shifter} <= {hs_shifter, (M_AXI_ARVALID && M_AXI_ARREADY)};
+  M_AXI_RDATA    <= (M_AXI_RVALID && M_AXI_RREADY) ? (M_AXI_RDATA+1) : M_AXI_RDATA;
   if (~ARESETN) begin
+    hs_shifter   <= '0;
     M_AXI_RVALID <= 0;
+    M_AXI_RDATA  <= '0;
   end
 end
 

@@ -14,21 +14,21 @@ module ar_ch
   import mem_agent_types::*;
 #(
     parameter ADDR_WIDTH         = AXI_MASTER_ADDR_WIDTH
-  , parameter RD_ADDR_BASE       = AXI_RD_ADDR_BASE
-  , parameter RD_ADDR_HIGH       = AXI_RD_ADDR_HIGH
-  , parameter RD_OUTSTANDING_MAX = AXI_RD_OUTSTANDING_MAX
+  , parameter WR_ADDR_BASE       = AXI_WR_ADDR_BASE
+  , parameter WR_ADDR_HIGH       = AXI_WR_ADDR_HIGH
+  , parameter WR_OUTSTANDING_MAX = AXI_WR_OUTSTANDING_MAX
 )(
   // Reset, Clock
     input wire           clk
   , input wire           rst_n
   , input wire           r_start_in
-  , if_m_ylxiao.ar_ch    maxi_ar
+  , if_m_ylxiao.aw_ch    maxi_aw
 );
 
   typedef  enum logic [1:0] {
-      AR_IDLE
-    , AR_REQ
-  } ar_state_t;
+      AW_IDLE
+    , AW_REQ
+  } aw_state_t;
 
   struct packed {
     logic                   wrreq;
@@ -37,10 +37,10 @@ module ar_ch
     logic                   rdreq;
     logic                   empty;
     logic [ADDR_WIDTH-1:0]  q;
-  } ar_fifo_if;
+  } aw_fifo_if;
 
-  logic [ADDR_WIDTH-1:0] ar_addr_nxt, ar_addr_ff;
-  ar_state_t             ar_st_nxt, ar_st_ff;
+  logic [ADDR_WIDTH-1:0] aw_addr_nxt, aw_addr_ff;
+  aw_state_t             aw_st_nxt, aw_st_ff;
   
   always_comb begin
 
