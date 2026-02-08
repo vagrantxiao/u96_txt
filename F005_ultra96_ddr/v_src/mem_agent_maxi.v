@@ -80,20 +80,21 @@ module mem_agent_maxi
 
   , input  wire                    r_start_in
   , input  wire                    w_start_in
-  , output wire                    rd_bit_out
 
   , output wire [DBG_CNT_BITS-1:0] rd_req_cnt_out
   , output wire [DBG_CNT_BITS-1:0] rd_data_cnt_out
   , output wire [DBG_CNT_BITS-1:0] wr_req_cnt_out
   , output wire [DBG_CNT_BITS-1:0] wr_data_cnt_out
   , output wire [DBG_CNT_BITS-1:0] rd_req_bp_out
+  , output wire [DBG_CNT_BITS-1:0] rd_data_bp_out
   , output wire [DBG_CNT_BITS-1:0] wr_req_bp_out
   , output wire [DBG_CNT_BITS-1:0] wr_data_bp_out
-  , output logic [DBG_CNT_BITS-1:0] wr_data_bp_out
   
   , output wire [DBG_CNT_BITS-1:0] timestamp_out
   , output wire [DBG_CNT_BITS-1:0] rd_latency_out
-  , output logic [DBG_CNT_BITS-1:0] wr_latency_out
+  , output wire [DBG_CNT_BITS-1:0] wr_latency_out
+  , output wire                    rd_bit_out
+  , output wire                    b_bit_out
 );
 
 

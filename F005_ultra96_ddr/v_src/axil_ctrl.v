@@ -15,18 +15,24 @@
 	)
 	(
 		// Users to add ports here
+		output       rd_start_out,
+		output       wr_start_out,
+
 		input [31:0] rd_req_cnt_in,
 		input [31:0] rd_data_cnt_in,
 		input [31:0] wr_req_cnt_in,
 		input [31:0] wr_data_cnt_in,
 		input [31:0] rd_req_bp_in,
+		input [31:0] rd_data_bp_in,
 		input [31:0] wr_req_bp_in,
 		input [31:0] wr_data_bp_in,
+
         input [31:0] timestamp_in,
         input [31:0] rd_latency_in,
+		input [31:0] wr_latency_in,
         
 		input        rd_bit_in,
-		output       rd_start_out,
+		input        b_bit_in,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -115,7 +121,7 @@
 	//----------------------------------------------
 	//-- Signals for user logic register space example
 	//------------------------------------------------
-	//-- Number of Slave Registers 10
+	//-- Number of Slave Registers 16
 	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg0;
 	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg1;
 	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg2;
@@ -126,7 +132,12 @@
 	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg7;
 	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg8;
 	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg9;
-	
+	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg10;
+	wire [C_S_AXI_DATA_WIDTH-1:0]	slv_reg11;
+	wire[C_S_AXI_DATA_WIDTH-1:0]	slv_reg12;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg13;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg14;
+	reg [C_S_AXI_DATA_WIDTH-1:0]	slv_reg15;
 	wire	 slv_reg_rden;
 	wire	 slv_reg_wren;
 	reg [C_S_AXI_DATA_WIDTH-1:0]	 reg_data_out;
@@ -249,6 +260,12 @@
 	      //slv_reg7 <= 0;
 	      //slv_reg8 <= 0;
 	      //slv_reg9 <= 0;
+	      //slv_reg10 <= 0;
+	      //slv_reg11 <= 0;
+	      //slv_reg12 <= 0;
+	      slv_reg13 <= 0;
+	      slv_reg14 <= 0;
+	      slv_reg15 <= 0;
 	    end 
 	  else begin
 	    if (slv_reg_wren)
@@ -324,6 +341,48 @@
 	                // Slave register 9
 	                //slv_reg9[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
 	              end  
+	          4'hA:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 10
+	                //slv_reg10[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
+	          4'hB:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 11
+	                //slv_reg11[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
+	          4'hC:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 12
+	                //slv_reg12[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
+	          4'hD:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 13
+	                slv_reg13[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
+	          4'hE:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 14
+	                slv_reg14[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
+	          4'hF:
+	            for ( byte_index = 0; byte_index <= (C_S_AXI_DATA_WIDTH/8)-1; byte_index = byte_index+1 )
+	              if ( S_AXI_WSTRB[byte_index] == 1 ) begin
+	                // Respective byte enables are asserted as per write strobes 
+	                // Slave register 15
+	                slv_reg15[(byte_index*8) +: 8] <= S_AXI_WDATA[(byte_index*8) +: 8];
+	              end  
 	          default : begin
 	                      slv_reg0 <= slv_reg0;
 	                      //slv_reg1 <= slv_reg1;
@@ -335,6 +394,12 @@
 	                      //slv_reg7 <= slv_reg7;
 	                      //slv_reg8 <= slv_reg8;
 	                      //slv_reg9 <= slv_reg9;
+	                      //slv_reg10 <= slv_reg10;
+	                      //slv_reg11 <= slv_reg11;
+	                      //slv_reg12 <= slv_reg12;
+	                      slv_reg13 <= slv_reg13;
+	                      slv_reg14 <= slv_reg14;
+	                      slv_reg15 <= slv_reg15;
 	                    end
 	        endcase
 	      end
@@ -453,6 +518,12 @@
 	        4'h7   : reg_data_out <= slv_reg7;
 	        4'h8   : reg_data_out <= slv_reg8;
 	        4'h9   : reg_data_out <= slv_reg9;
+	        4'hA   : reg_data_out <= slv_reg10;
+	        4'hB   : reg_data_out <= slv_reg11;
+	        4'hC   : reg_data_out <= slv_reg12;
+	        4'hD   : reg_data_out <= slv_reg13;
+	        4'hE   : reg_data_out <= slv_reg14;
+	        4'hF   : reg_data_out <= slv_reg15;
 	        default : reg_data_out <= 0;
 	      endcase
 	end
@@ -477,16 +548,21 @@
 	end    
 
 	// Add user logic here
-    assign rd_start_out = slv_reg0[0];
+	assign rd_start_out = slv_reg0[0];
+	assign wr_start_out = slv_reg0[1];
+
 	assign slv_reg1     = rd_req_cnt_in;
 	assign slv_reg2     = rd_data_cnt_in;
 	assign slv_reg3     = wr_req_cnt_in;
 	assign slv_reg4     = wr_data_cnt_in;
 	assign slv_reg5     = rd_req_bp_in;
-	assign slv_reg6     = wr_req_bp_in;
-	assign slv_reg7     = rd_latency_in;
-	assign slv_reg8     = timestamp_in;
-	assign slv_reg9     = {31'b0, rd_bit_in};
+	assign slv_reg6     = rd_data_bp_in;
+	assign slv_reg7     = wr_req_bp_in;
+	assign slv_reg8     = wr_data_bp_in;
+    assign slv_reg9     =  timestamp_in;
+    assign slv_reg10    =  rd_latency_in;
+	assign slv_reg11    =  wr_latency_in;
+	assign slv_reg12    =  {30'd0, rd_bit_in, b_bit_in};
 	// User logic ends
 
 	endmodule

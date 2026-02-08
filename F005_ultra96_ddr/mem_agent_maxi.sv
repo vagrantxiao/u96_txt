@@ -82,20 +82,22 @@ module mem_agent_maxi
 
   , input  wire                     r_start_in
   , input  wire                     w_start_in
-  , output logic                    rd_bit_out
-  , output logic                    b_bit_out
 
   , output logic [DBG_CNT_BITS-1:0] rd_req_cnt_out
   , output logic [DBG_CNT_BITS-1:0] rd_data_cnt_out
   , output logic [DBG_CNT_BITS-1:0] wr_req_cnt_out
   , output logic [DBG_CNT_BITS-1:0] wr_data_cnt_out
   , output logic [DBG_CNT_BITS-1:0] rd_req_bp_out
+  , output logic [DBG_CNT_BITS-1:0] rd_data_bp_out
   , output logic [DBG_CNT_BITS-1:0] wr_req_bp_out
   , output logic [DBG_CNT_BITS-1:0] wr_data_bp_out
   
   , output logic [DBG_CNT_BITS-1:0] timestamp_out
   , output logic [DBG_CNT_BITS-1:0] rd_latency_out
   , output logic [DBG_CNT_BITS-1:0] wr_latency_out
+
+  , output logic                    rd_bit_out
+  , output logic                    b_bit_out
 
 );
 
@@ -275,6 +277,17 @@ debug_ar_bp(
   , .rst_n     (ARESETN                                          )
   , .en_in     (maxi_ar.M_AXI_ARVALID && (~maxi_ar.M_AXI_ARREADY)) 
   , .cnt_out   (rd_req_bp_out                                    )
+);
+
+
+fr_cnt #(
+  .DATA_WIDTH(DBG_CNT_BITS)
+)
+debug_r_bp(
+    .clk       (ACLK                                             ) 
+  , .rst_n     (ARESETN                                          )
+  , .en_in     (maxi_r.M_AXI_RVALID && (~maxi_r.M_AXI_RREADY)    ) 
+  , .cnt_out   (rd_data_bp_out                                   )
 );
 
 fr_cnt #(
