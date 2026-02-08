@@ -22,7 +22,7 @@ module ar_ch
     input wire           clk
   , input wire           rst_n
   , input wire           r_start_in
-  , if_m_ylxiao.ar_ch    maxi_ar
+  , if_axi4_master.ar_ch maxi_ar
 );
 
   typedef  enum logic [1:0] {

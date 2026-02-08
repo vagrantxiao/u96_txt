@@ -10,7 +10,7 @@
 `timescale 1 ps / 1 ps
 `default_nettype none
 
-module ar_ch
+module aw_ch
   import mem_agent_types::*;
 #(
     parameter ADDR_WIDTH         = AXI_MASTER_ADDR_WIDTH
@@ -22,7 +22,7 @@ module ar_ch
     input wire           clk
   , input wire           rst_n
   , input wire           r_start_in
-  , if_m_ylxiao.aw_ch    maxi_aw
+  , if_axi4_master.aw_ch maxi_aw
 );
 
   typedef  enum logic [1:0] {

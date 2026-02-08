@@ -1,5 +1,5 @@
 
-interface if_m_ylxiao #(
+interface if_axi4_master #(
     parameter ADDR_WIDTH = 32
   , parameter DATA_WIDTH = 64
 )(

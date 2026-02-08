@@ -21,7 +21,7 @@ module r_ch
     input  wire         clk
   , input  wire         rst_n
   , output logic        rd_bit_out
-  , if_m_ylxiao.r_ch    maxi_r
+  , if_axi4_master.r_ch maxi_r
 );
 
   logic rd_bit_nxt, rd_bit_ff;

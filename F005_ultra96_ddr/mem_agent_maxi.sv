@@ -95,11 +95,11 @@ module mem_agent_maxi
   , output logic [DBG_CNT_BITS-1:0] rd_latency_out
 );
 
-if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_ar( .ARESETN(ARESETN), .ACLK(ACLK));
-if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_r ( .ARESETN(ARESETN), .ACLK(ACLK));
-if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_aw( .ARESETN(ARESETN), .ACLK(ACLK));
-if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_w ( .ARESETN(ARESETN), .ACLK(ACLK));
-if_m_ylxiao #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_b ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_ar( .ARESETN(ARESETN), .ACLK(ACLK));
+if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_r ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_aw( .ARESETN(ARESETN), .ACLK(ACLK));
+if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_w ( .ARESETN(ARESETN), .ACLK(ACLK));
+if_axi4_master #(.ADDR_WIDTH(ADDR_WIDTH), .DATA_WIDTH(DATA_WIDTH)) maxi_b ( .ARESETN(ARESETN), .ACLK(ACLK));
 
 logic [DBG_CNT_BITS-1:0] timestamp_net;
 logic [DBG_CNT_BITS-1:0] rd_data_timestamp_net;

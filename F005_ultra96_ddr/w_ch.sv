@@ -12,7 +12,7 @@
 `default_nettype none
 
 
-module r_ch
+module w_ch
   import mem_agent_types::*;
 #(
     parameter DATA_WIDTH = AXI_MASTER_DATA_WIDTH
@@ -21,7 +21,7 @@ module r_ch
     input  wire         clk
   , input  wire         rst_n
   , output logic        rd_bit_out
-  , if_m_ylxiao.r_ch    maxi_r
+  , if_axi4_master.r_ch maxi_r
 );
 
   logic rd_bit_nxt, rd_bit_ff;

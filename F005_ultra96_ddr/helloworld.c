@@ -52,27 +52,113 @@
 #include "xil_io.h"
 #include "sleep.h"
 
-#define IP_BASE XPAR_AXIL_CTRL_0_BASEADDR
+#define CLK_PERIOD  10 // in ns, 10ns for 100MHz
+#define DATA_WIDTH  64 // in bits, adjust according to your design
+#define BYTES_PER_TRANSFER (DATA_WIDTH / 8) // Convert bits to bytes
+#define MAX_TEST_TIME 10
+
+#define IP_BASE     (XPAR_AXIL_CTRL_0_BASEADDR)
+#define RD_REQ_CNT  (XPAR_AXIL_CTRL_0_BASEADDR+4)
+#define RD_DATA_CNT (XPAR_AXIL_CTRL_0_BASEADDR+8)
+#define WR_REQ_CNT  (XPAR_AXIL_CTRL_0_BASEADDR+12)
+#define WR_DATA_CNT (XPAR_AXIL_CTRL_0_BASEADDR+16)
+#define RD_REQ_BP   (XPAR_AXIL_CTRL_0_BASEADDR+20)
+#define WR_REQ_BP   (XPAR_AXIL_CTRL_0_BASEADDR+24)
+#define RD_LATENCY  (XPAR_AXIL_CTRL_0_BASEADDR+28)
+#define TIMESTAMP   (XPAR_AXIL_CTRL_0_BASEADDR+32)
+
+
+
+void start_read() {
+    Xil_Out32(IP_BASE, 1);
+    Xil_Out32(IP_BASE, 0);
+}
+
+float avg(float arr[], int size) {
+    float sum = 0.0;
+    for (int i = 0; i < size; i++) {
+        sum += arr[i];
+    }
+    return sum / size;
+}
 
 int main()
 {
+	unsigned int rd_req_cnt_prev, rd_req_cnt;
+	unsigned int rd_data_cnt_prev, rd_data_cnt;
+	unsigned int wr_req_cnt_prev, wr_req_cnt;
+	unsigned int wr_data_cnt_prev, wr_data_cnt;
+	unsigned int rd_req_bp_prev, rd_req_bp;
+	unsigned int wr_req_bp_prev, wr_req_bp;
+	unsigned int rd_latency_prev, rd_latency;
+    unsigned int timestamp_prev, timestamp;
+
+    float time_diff[MAX_TEST_TIME];
+    float rd_throughput_MBps[MAX_TEST_TIME];
+    float wr_throughput_MBps[MAX_TEST_TIME];
+    float rd_req_bp_rate[MAX_TEST_TIME];
+    float wr_req_bp_rate[MAX_TEST_TIME];
+    float rd_latency_ns[MAX_TEST_TIME];
+    unsigned int timestamp_array[MAX_TEST_TIME];
+
     init_platform();
     for (int i=0; i < 40; i++){
     	sleep(1);
     	printf("%d second\n", i);
     }
 
-    Xil_Out32(IP_BASE, 1);
-    Xil_Out32(IP_BASE, 0);
-    print("Hello World\n");
-    printf("We receive[2] %d\n", Xil_In32(IP_BASE+8));
-    printf("We receive[3] %d\n", Xil_In32(IP_BASE+28));
-    sleep(1);
-    printf("We receive[3] %d\n", Xil_In32(IP_BASE+28));
-    sleep(1);
-    printf("We receive[3] %d\n", Xil_In32(IP_BASE+28));
-    sleep(1);
-    printf("We receive[3] %d\n", Xil_In32(IP_BASE+28));
+    start_read();
+
+    rd_req_cnt_prev  = Xil_In32(RD_REQ_CNT);
+    rd_data_cnt_prev = Xil_In32(RD_DATA_CNT);
+    wr_req_cnt_prev  = Xil_In32(WR_REQ_CNT);
+    wr_data_cnt_prev = Xil_In32(WR_DATA_CNT);
+    rd_req_bp_prev   = Xil_In32(RD_REQ_BP);
+    wr_req_bp_prev   = Xil_In32(WR_REQ_BP);
+    rd_latency_prev  = Xil_In32(RD_LATENCY);
+    timestamp_prev   = Xil_In32(TIMESTAMP);
+
+    for (int i=0; i < MAX_TEST_TIME; i++){
+    	sleep(1);
+        rd_req_cnt  = Xil_In32(RD_REQ_CNT);
+        rd_data_cnt = Xil_In32(RD_DATA_CNT);
+        wr_req_cnt  = Xil_In32(WR_REQ_CNT);
+        wr_data_cnt = Xil_In32(WR_DATA_CNT);
+        rd_req_bp   = Xil_In32(RD_REQ_BP);
+        wr_req_bp   = Xil_In32(WR_REQ_BP);
+        rd_latency  = Xil_In32(RD_LATENCY);
+        timestamp   = Xil_In32(TIMESTAMP);
+        timestamp_array[i] = timestamp;
+        time_diff[i] = (float)(timestamp - timestamp_prev) * CLK_PERIOD / 1e9; // Convert to seconds
+        rd_throughput_MBps[i] = (float)(rd_data_cnt - rd_data_cnt_prev) * BYTES_PER_TRANSFER / time_diff[i] / 1e6; // in MB/s
+        wr_throughput_MBps[i] = (float)(wr_data_cnt - wr_data_cnt_prev) * BYTES_PER_TRANSFER / time_diff[i] / 1e6; // in MB/s
+        rd_req_bp_rate[i] = (float)(rd_req_bp - rd_req_bp_prev) / ((float)(rd_req_cnt - rd_req_cnt_prev)+(float)(rd_req_bp - rd_req_bp_prev)); // ratio of backpressure events to total requests
+        wr_req_bp_rate[i] = (float)(wr_req_bp - wr_req_bp_prev) / ((float)(wr_req_cnt - wr_req_cnt_prev)+(float)(wr_req_bp - wr_req_bp_prev)); // ratio of backpressure events to total requests
+        rd_latency_ns[i] = (float)rd_latency * CLK_PERIOD; // in nanoseconds
+        
+        // Update previous values for next iteration
+        rd_req_cnt_prev  = rd_req_cnt;
+        rd_data_cnt_prev = rd_data_cnt;
+        wr_req_cnt_prev  = wr_req_cnt;
+        wr_data_cnt_prev = wr_data_cnt;
+        rd_req_bp_prev   = rd_req_bp;
+        wr_req_bp_prev   = wr_req_bp;
+        rd_latency_prev  = rd_latency;
+        timestamp_prev   = timestamp;
+    }
+
+    for (int i=0; i < MAX_TEST_TIME; i++){
+        printf("Timestamp: %08x\n", timestamp_array[i]);
+    }
+	printf("Time: %.2f s\n", avg(time_diff, MAX_TEST_TIME));
+	printf("Read Throughput: %.2f MB/s\n", avg(rd_throughput_MBps, MAX_TEST_TIME));
+	printf("Write Throughput: %.2f MB/s\n", avg(wr_throughput_MBps, MAX_TEST_TIME));
+	printf("Read Request Backpressure Rate: %.2f times/s\n", avg(rd_req_bp_rate, MAX_TEST_TIME));
+	printf("Write Request Backpressure Rate: %.2f times/s\n", avg(wr_req_bp_rate, MAX_TEST_TIME));
+	printf("Average Read Latency: %.2f ns\n", avg(rd_latency_ns, MAX_TEST_TIME));
+	printf("\n");
+
+    print("Finish Test\n");
     cleanup_platform();
     return 0;
 }

@@ -40,7 +40,7 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 
 # The design that will be created by this Tcl script contains the following 
 # module references:
-# axil_ctrl, mem_agent_axi
+# axil_ctrl, mem_agent_maxi
 
 # Please add the sources of those modules before sourcing this Tcl script.
 
@@ -160,7 +160,7 @@ set bCheckModules 1
 if { $bCheckModules == 1 } {
    set list_check_mods "\ 
 axil_ctrl\
-mem_agent_axi\
+mem_agent_maxi\
 "
 
    set list_mods_missing ""
@@ -242,13 +242,13 @@ proc create_root_design { parentCell } {
      return 1
    }
   
-  # Create instance: mem_agent_axi_0, and set properties
-  set block_name mem_agent_axi
-  set block_cell_name mem_agent_axi_0
-  if { [catch {set mem_agent_axi_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+  # Create instance: mem_agent_maxi_0, and set properties
+  set block_name mem_agent_maxi
+  set block_cell_name mem_agent_maxi_0
+  if { [catch {set mem_agent_maxi_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
-   } elseif { $mem_agent_axi_0 eq "" } {
+   } elseif { $mem_agent_maxi_0 eq "" } {
      catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
      return 1
    }
@@ -287,9 +287,6 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_22_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_23_POLARITY {Default} \
     CONFIG.PSU_MIO_25_POLARITY {Default} \
-    CONFIG.PSU_MIO_2_DRIVE_STRENGTH {12} \
-    CONFIG.PSU_MIO_2_POLARITY {Default} \
-    CONFIG.PSU_MIO_2_SLEW {fast} \
     CONFIG.PSU_MIO_31_POLARITY {Default} \
     CONFIG.PSU_MIO_35_POLARITY {Default} \
     CONFIG.PSU_MIO_36_POLARITY {Default} \
@@ -297,8 +294,6 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_39_DRIVE_STRENGTH {12} \
     CONFIG.PSU_MIO_39_POLARITY {Default} \
     CONFIG.PSU_MIO_39_SLEW {fast} \
-    CONFIG.PSU_MIO_3_INPUT_TYPE {cmos} \
-    CONFIG.PSU_MIO_3_POLARITY {Default} \
     CONFIG.PSU_MIO_40_POLARITY {Default} \
     CONFIG.PSU_MIO_44_POLARITY {Default} \
     CONFIG.PSU_MIO_45_POLARITY {Default} \
@@ -306,10 +301,10 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_77_POLARITY {Default} \
     CONFIG.PSU_MIO_7_POLARITY {Default} \
     CONFIG.PSU_MIO_8_POLARITY {Default} \
-    CONFIG.PSU_MIO_TREE_PERIPHERALS {UART 1#UART 1#GPIO0 MIO#GPIO0 MIO#I2C 1#I2C 1#SPI 1#GPIO0 MIO#GPIO0 MIO#SPI 1#SPI 1#SPI 1#GPIO0 MIO#SD 0#SD 0#SD 0#SD 0#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#SD 0#SD\
-0#GPIO0 MIO#SD 0#GPIO0 MIO#PMU GPI 0#DPAUX#DPAUX#DPAUX#DPAUX#GPIO1 MIO#PMU GPO 0#PMU GPO 1#PMU GPO 2#GPIO1 MIO#GPIO1 MIO#GPIO1 MIO#SPI 0#GPIO1 MIO#GPIO1 MIO#SPI 0#SPI 0#SPI 0#GPIO1 MIO#GPIO1 MIO#SD 1#SD\
-1#SD 1#SD 1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#GPIO2 MIO#GPIO2 MIO} \
-    CONFIG.PSU_MIO_TREE_SIGNALS {txd#rxd#gpio0[2]#gpio0[3]#scl_out#sda_out#sclk_out#gpio0[7]#gpio0[8]#n_ss_out[0]#miso#mosi#gpio0[12]#sdio0_data_out[0]#sdio0_data_out[1]#sdio0_data_out[2]#sdio0_data_out[3]#gpio0[17]#gpio0[18]#gpio0[19]#gpio0[20]#sdio0_cmd_out#sdio0_clk_out#gpio0[23]#sdio0_cd_n#gpio0[25]#gpi[0]#dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in#gpio1[31]#gpo[0]#gpo[1]#gpo[2]#gpio1[35]#gpio1[36]#gpio1[37]#sclk_out#gpio1[39]#gpio1[40]#n_ss_out[0]#miso#mosi#gpio1[44]#gpio1[45]#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#gpio2[76]#gpio2[77]}\
+    CONFIG.PSU_MIO_TREE_PERIPHERALS {UART 1#UART 1#UART 0#UART 0#I2C 1#I2C 1#SPI 1#GPIO0 MIO#GPIO0 MIO#SPI 1#SPI 1#SPI 1#GPIO0 MIO#SD 0#SD 0#SD 0#SD 0#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#SD 0#SD 0#GPIO0\
+MIO#SD 0#GPIO0 MIO#PMU GPI 0#DPAUX#DPAUX#DPAUX#DPAUX#GPIO1 MIO#PMU GPO 0#PMU GPO 1#PMU GPO 2#GPIO1 MIO#GPIO1 MIO#GPIO1 MIO#SPI 0#GPIO1 MIO#GPIO1 MIO#SPI 0#SPI 0#SPI 0#GPIO1 MIO#GPIO1 MIO#SD 1#SD 1#SD 1#SD\
+1#SD 1#SD 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#GPIO2 MIO#GPIO2 MIO} \
+    CONFIG.PSU_MIO_TREE_SIGNALS {txd#rxd#rxd#txd#scl_out#sda_out#sclk_out#gpio0[7]#gpio0[8]#n_ss_out[0]#miso#mosi#gpio0[12]#sdio0_data_out[0]#sdio0_data_out[1]#sdio0_data_out[2]#sdio0_data_out[3]#gpio0[17]#gpio0[18]#gpio0[19]#gpio0[20]#sdio0_cmd_out#sdio0_clk_out#gpio0[23]#sdio0_cd_n#gpio0[25]#gpi[0]#dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in#gpio1[31]#gpo[0]#gpo[1]#gpo[2]#gpio1[35]#gpio1[36]#gpio1[37]#sclk_out#gpio1[39]#gpio1[40]#n_ss_out[0]#miso#mosi#gpio1[44]#gpio1[45]#sdio1_data_out[0]#sdio1_data_out[1]#sdio1_data_out[2]#sdio1_data_out[3]#sdio1_cmd_out#sdio1_clk_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#gpio2[76]#gpio2[77]}\
 \
     CONFIG.PSU_SD0_INTERNAL_BUS_WIDTH {4} \
     CONFIG.PSU_SD1_INTERNAL_BUS_WIDTH {4} \
@@ -485,7 +480,7 @@ proc create_root_design { parentCell } {
     CONFIG.PSU__CRL_APB__TIMESTAMP_REF_CTRL__ACT_FREQMHZ {100.000000} \
     CONFIG.PSU__CRL_APB__TIMESTAMP_REF_CTRL__DIVISOR0 {15} \
     CONFIG.PSU__CRL_APB__TIMESTAMP_REF_CTRL__SRCSEL {IOPLL} \
-    CONFIG.PSU__CRL_APB__UART0_REF_CTRL__ACT_FREQMHZ {100} \
+    CONFIG.PSU__CRL_APB__UART0_REF_CTRL__ACT_FREQMHZ {100.000000} \
     CONFIG.PSU__CRL_APB__UART0_REF_CTRL__DIVISOR0 {15} \
     CONFIG.PSU__CRL_APB__UART0_REF_CTRL__DIVISOR1 {1} \
     CONFIG.PSU__CRL_APB__UART0_REF_CTRL__SRCSEL {IOPLL} \
@@ -652,7 +647,7 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
     CONFIG.PSU__PSS_REF_CLK__FREQMHZ {33.333333} \
     CONFIG.PSU__QSPI__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__SATA__PERIPHERAL__ENABLE {0} \
-    CONFIG.PSU__SAXIGP2__DATA_WIDTH {64} \
+    CONFIG.PSU__SAXIGP2__DATA_WIDTH {128} \
     CONFIG.PSU__SD0_COHERENCY {0} \
     CONFIG.PSU__SD0_ROUTE_THROUGH_FPD {0} \
     CONFIG.PSU__SD0__CLK_50_SDR_ITAP_DLY {0x15} \
@@ -739,37 +734,36 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_smc_M00_AXI [get_bd_intf_pins axi_smc/M00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/S_AXI_HP0_FPD]
-  connect_bd_intf_net -intf_net mem_agent_axi_0_M_AXI [get_bd_intf_pins axi_smc/S00_AXI] [get_bd_intf_pins mem_agent_axi_0/M_AXI]
+  connect_bd_intf_net -intf_net mem_agent_maxi_0_M_AXI [get_bd_intf_pins axi_smc/S00_AXI] [get_bd_intf_pins mem_agent_maxi_0/M_AXI]
   connect_bd_intf_net -intf_net ps8_0_axi_periph_M00_AXI [get_bd_intf_pins axil_ctrl_0/S_AXI] [get_bd_intf_pins ps8_0_axi_periph/M00_AXI]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins ps8_0_axi_periph/S00_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM1_FPD [get_bd_intf_pins ps8_0_axi_periph/S01_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM1_FPD]
 
   # Create port connections
-  connect_bd_net -net axil_ctrl_0_r_start_out [get_bd_pins axil_ctrl_0/rd_start_out] [get_bd_pins mem_agent_axi_0/r_start_in]
-  connect_bd_net -net mem_agent_axi_0_rd_bit_out [get_bd_pins axil_ctrl_0/rd_bit_in] [get_bd_pins mem_agent_axi_0/rd_bit_out]
-  connect_bd_net -net mem_agent_axi_0_rd_data_cnt_out [get_bd_pins axil_ctrl_0/rd_data_cnt_in] [get_bd_pins mem_agent_axi_0/rd_data_cnt_out]
-  connect_bd_net -net mem_agent_axi_0_rd_latency_out [get_bd_pins axil_ctrl_0/rd_latency_in] [get_bd_pins mem_agent_axi_0/rd_latency_out]
-  connect_bd_net -net mem_agent_axi_0_rd_req_bp_out [get_bd_pins axil_ctrl_0/rd_req_bp_in] [get_bd_pins mem_agent_axi_0/rd_req_bp_out]
-  connect_bd_net -net mem_agent_axi_0_rd_req_cnt_out [get_bd_pins axil_ctrl_0/rd_req_cnt_in] [get_bd_pins mem_agent_axi_0/rd_req_cnt_out]
-  connect_bd_net -net mem_agent_axi_0_timestamp_out [get_bd_pins axil_ctrl_0/timestamp_in] [get_bd_pins mem_agent_axi_0/timestamp_out]
-  connect_bd_net -net mem_agent_axi_0_wr_data_bp_out [get_bd_pins axil_ctrl_0/wr_data_bp_in] [get_bd_pins mem_agent_axi_0/wr_data_bp_out]
-  connect_bd_net -net mem_agent_axi_0_wr_data_cnt_out [get_bd_pins axil_ctrl_0/wr_data_cnt_in] [get_bd_pins mem_agent_axi_0/wr_data_cnt_out]
-  connect_bd_net -net mem_agent_axi_0_wr_req_bp_out [get_bd_pins axil_ctrl_0/wr_req_bp_in] [get_bd_pins mem_agent_axi_0/wr_req_bp_out]
-  connect_bd_net -net mem_agent_axi_0_wr_req_cnt_out [get_bd_pins axil_ctrl_0/wr_req_cnt_in] [get_bd_pins mem_agent_axi_0/wr_req_cnt_out]
-  connect_bd_net -net rst_ps8_0_100M_peripheral_aresetn [get_bd_pins axi_smc/aresetn] [get_bd_pins axil_ctrl_0/S_AXI_ARESETN] [get_bd_pins mem_agent_axi_0/ARESETN] [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN] [get_bd_pins ps8_0_axi_periph/S01_ARESETN] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
-  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_smc/aclk] [get_bd_pins axil_ctrl_0/S_AXI_ACLK] [get_bd_pins mem_agent_axi_0/ACLK] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins ps8_0_axi_periph/S01_ACLK] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
+  connect_bd_net -net axil_ctrl_0_rd_start_out [get_bd_pins axil_ctrl_0/rd_start_out] [get_bd_pins mem_agent_maxi_0/r_start_in] [get_bd_pins mem_agent_maxi_0/w_start_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_bit_out [get_bd_pins axil_ctrl_0/rd_bit_in] [get_bd_pins mem_agent_maxi_0/rd_bit_out]
+  connect_bd_net -net mem_agent_maxi_0_rd_data_cnt_out [get_bd_pins axil_ctrl_0/rd_data_cnt_in] [get_bd_pins mem_agent_maxi_0/rd_data_cnt_out]
+  connect_bd_net -net mem_agent_maxi_0_rd_latency_out [get_bd_pins axil_ctrl_0/rd_latency_in] [get_bd_pins mem_agent_maxi_0/rd_latency_out]
+  connect_bd_net -net mem_agent_maxi_0_rd_req_bp_out [get_bd_pins axil_ctrl_0/rd_req_bp_in] [get_bd_pins mem_agent_maxi_0/rd_req_bp_out]
+  connect_bd_net -net mem_agent_maxi_0_rd_req_cnt_out [get_bd_pins axil_ctrl_0/rd_req_cnt_in] [get_bd_pins mem_agent_maxi_0/rd_req_cnt_out]
+  connect_bd_net -net mem_agent_maxi_0_timestamp_out [get_bd_pins axil_ctrl_0/timestamp_in] [get_bd_pins mem_agent_maxi_0/timestamp_out]
+  connect_bd_net -net mem_agent_maxi_0_wr_data_bp_out [get_bd_pins axil_ctrl_0/wr_data_bp_in] [get_bd_pins mem_agent_maxi_0/wr_data_bp_out]
+  connect_bd_net -net mem_agent_maxi_0_wr_data_cnt_out [get_bd_pins axil_ctrl_0/wr_data_cnt_in] [get_bd_pins mem_agent_maxi_0/wr_data_cnt_out]
+  connect_bd_net -net mem_agent_maxi_0_wr_req_bp_out [get_bd_pins axil_ctrl_0/wr_req_bp_in] [get_bd_pins mem_agent_maxi_0/wr_req_bp_out]
+  connect_bd_net -net mem_agent_maxi_0_wr_req_cnt_out [get_bd_pins axil_ctrl_0/wr_req_cnt_in] [get_bd_pins mem_agent_maxi_0/wr_req_cnt_out]
+  connect_bd_net -net rst_ps8_0_100M_peripheral_aresetn [get_bd_pins axi_smc/aresetn] [get_bd_pins axil_ctrl_0/S_AXI_ARESETN] [get_bd_pins mem_agent_maxi_0/ARESETN] [get_bd_pins ps8_0_axi_periph/ARESETN] [get_bd_pins ps8_0_axi_periph/M00_ARESETN] [get_bd_pins ps8_0_axi_periph/S00_ARESETN] [get_bd_pins ps8_0_axi_periph/S01_ARESETN] [get_bd_pins rst_ps8_0_100M/peripheral_aresetn]
+  connect_bd_net -net zynq_ultra_ps_e_0_pl_clk0 [get_bd_pins axi_smc/aclk] [get_bd_pins axil_ctrl_0/S_AXI_ACLK] [get_bd_pins mem_agent_maxi_0/ACLK] [get_bd_pins ps8_0_axi_periph/ACLK] [get_bd_pins ps8_0_axi_periph/M00_ACLK] [get_bd_pins ps8_0_axi_periph/S00_ACLK] [get_bd_pins ps8_0_axi_periph/S01_ACLK] [get_bd_pins rst_ps8_0_100M/slowest_sync_clk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/maxihpm1_fpd_aclk] [get_bd_pins zynq_ultra_ps_e_0/pl_clk0] [get_bd_pins zynq_ultra_ps_e_0/saxihp0_fpd_aclk]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0 [get_bd_pins rst_ps8_0_100M/ext_reset_in] [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0]
 
   # Create address segments
-  assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces mem_agent_axi_0/M_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] -force
-  assign_bd_address -offset 0xFF000000 -range 0x01000000 -target_address_space [get_bd_addr_spaces mem_agent_axi_0/M_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] -force
+  assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces mem_agent_maxi_0/M_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_DDR_LOW] -force
+  assign_bd_address -offset 0xFF000000 -range 0x01000000 -target_address_space [get_bd_addr_spaces mem_agent_maxi_0/M_AXI] [get_bd_addr_segs zynq_ultra_ps_e_0/SAXIGP2/HP0_LPS_OCM] -force
   assign_bd_address -offset 0xA0000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axil_ctrl_0/S_AXI/reg0] -force
 
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
-  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -781,4 +775,6 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
 
 create_root_design ""
 
+
+common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
