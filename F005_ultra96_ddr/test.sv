@@ -1,7 +1,7 @@
 module test();
 
 parameter RD_LATENCY = 10;
-
+parameter WR_LATENCY = 20;
 
 
 reg         ARESETN;
@@ -49,9 +49,12 @@ reg [7:0]   M_AXI_RUSER;
 reg         M_AXI_RVALID;
 wire        M_AXI_RREADY;
 reg         r_start_in;
+reg         w_start_in;
 wire        rd_bit_out;
+wire        b_bit_out;
 
-reg [RD_LATENCY-1:0] hs_shifter;
+reg [RD_LATENCY-1:0] r_hs_shifter;
+reg [WR_LATENCY-1:0] w_hs_shifter;
 
 always #5 ACLK = ~ACLK;
 
@@ -70,12 +73,25 @@ initial begin
   M_AXI_RLAST   = 1;
   M_AXI_RUSER   = 0;
   r_start_in    = 0;
+  w_start_in    = 0;
   #1007
   ARESETN       = 1;
+  
   #1000
+  w_start_in    = 1'b1;
+  #10
+  w_start_in    = 1'b0;  
+  #10_000
+  M_AXI_AWREADY = 0;
+  #10_000
+  M_AXI_AWREADY = 1;
+  
+  #20_000
   r_start_in    = 1'b1;
   #10
   r_start_in    = 1'b0;
+  
+  
   #10_000
   M_AXI_ARREADY = 0;
   #10_000
@@ -130,15 +146,20 @@ mem_agent_maxi dut1(
   , .M_AXI_RVALID  (M_AXI_RVALID  )
   , .M_AXI_RREADY  (M_AXI_RREADY  )
   , .r_start_in    (r_start_in    )
+  , .w_start_in    (w_start_in    )
   , .rd_bit_out    (rd_bit_out    )
+  , .b_bit_out     (b_bit_out     )
 );
 
 always @(posedge ACLK) begin
-  {M_AXI_RVALID, hs_shifter} <= {hs_shifter, (M_AXI_ARVALID && M_AXI_ARREADY)};
+  {M_AXI_RVALID, r_hs_shifter} <= {r_hs_shifter, (M_AXI_ARVALID && M_AXI_ARREADY)};
+  {M_AXI_BVALID, w_hs_shifter} <= {w_hs_shifter, (M_AXI_AWVALID && M_AXI_AWREADY)};
   M_AXI_RDATA    <= (M_AXI_RVALID && M_AXI_RREADY) ? (M_AXI_RDATA+1) : M_AXI_RDATA;
   if (~ARESETN) begin
-    hs_shifter   <= '0;
+    r_hs_shifter <= '0;
+    w_hs_shifter <= '0;
     M_AXI_RVALID <= 0;
+    M_AXI_BVALID <= 0;
     M_AXI_RDATA  <= '0;
   end
 end

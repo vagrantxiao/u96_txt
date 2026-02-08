@@ -2,8 +2,8 @@
 //--------------------------------------------------------------------------------
 //Tool Version: Vivado v.2022.2 (lin64) Build 3671981 Fri Oct 14 04:59:54 MDT 2022
 //Date        : Sun Feb  1 13:04:08 2026
-//Host        : oquark running 64-bit Ubuntu 20.04.6 LTS
-//Command     : generate_target design_1_wrapper.bd
+//Host        : oquawk running 64-bit Ubuntu 20.04.6 LTS
+//Command     : generate_tawget design_1_wrapper.bd
 //Design      : design_1_wrapper
 //Purpose     : IP block netlist
 //--------------------------------------------------------------------------------
@@ -14,6 +14,7 @@ module aw_ch
   import mem_agent_types::*;
 #(
     parameter ADDR_WIDTH         = AXI_MASTER_ADDR_WIDTH
+  , parameter AWSIZE             = AXI_MASTER_SIZE
   , parameter WR_ADDR_BASE       = AXI_WR_ADDR_BASE
   , parameter WR_ADDR_HIGH       = AXI_WR_ADDR_HIGH
   , parameter WR_OUTSTANDING_MAX = AXI_WR_OUTSTANDING_MAX
@@ -21,7 +22,7 @@ module aw_ch
   // Reset, Clock
     input wire           clk
   , input wire           rst_n
-  , input wire           r_start_in
+  , input wire           w_start_in
   , if_axi4_master.aw_ch maxi_aw
 );
 
@@ -45,60 +46,62 @@ module aw_ch
   always_comb begin
 
     // Default values
-    ar_fifo_if.wrreq      = 0;
-    maxi_ar.M_AXI_ARID    = '0; 
-    maxi_ar.M_AXI_ARLEN   = '0;
-    maxi_ar.M_AXI_ARSIZE  = 3'b011;
-    maxi_ar.M_AXI_ARBURST = 2'b01;
-    maxi_ar.M_AXI_ARLOCK  = 2'b00;
-    maxi_ar.M_AXI_ARCACHE = 4'b0011;
-    maxi_ar.M_AXI_ARQOS   = 4'b0000;
-    maxi_ar.M_AXI_ARPROT  = 3'b000;
-    maxi_ar.M_AXI_ARUSER  = '0;
+    aw_fifo_if.wrreq      = 0;
+    maxi_aw.M_AXI_AWID    = 0;
+    maxi_aw.M_AXI_AWLEN   = 8'd0;     // Burst Length: 0-255
+    maxi_aw.M_AXI_AWSIZE  = AWSIZE;   // Burst Size: Fixed 2'b011
+    maxi_aw.M_AXI_AWBURST = 2'b01;    // Burst Type: Fixed 2'b01(Incremental Burst)
+    maxi_aw.M_AXI_AWLOCK  = 1'b0;     // Lock: Fixed 2'b00
+    maxi_aw.M_AXI_AWCACHE = 4'b0011;  // Cache: Fiex 2'b0011
+    maxi_aw.M_AXI_AWPROT  = 3'b000;   // Protect: Fixed 2'b000
+    maxi_aw.M_AXI_AWQOS   = 4'b0000;  // QoS: Fixed 2'b0000
+    maxi_aw.M_AXI_AWUSER  = '0;   // User: Fixed 32'd0
+
 
     // Assigned by registers
-    ar_st_nxt             = ar_st_ff;
-    ar_addr_nxt           = ar_addr_ff;
-    ar_fifo_if.data       = ar_addr_ff;
+    aw_st_nxt             = aw_st_ff;
+    aw_addr_nxt           = aw_addr_ff;
+    aw_fifo_if.data       = aw_addr_ff;
 
     // Assigned by logic
-    maxi_ar.M_AXI_ARADDR  =  ar_fifo_if.q;
-    maxi_ar.M_AXI_ARVALID = ~ar_fifo_if.empty;
-    ar_fifo_if.rdreq      = (~ar_fifo_if.empty && maxi_ar.M_AXI_ARREADY);
+    maxi_aw.M_AXI_AWADDR  =  aw_fifo_if.q;
+    maxi_aw.M_AXI_AWVALID = ~aw_fifo_if.empty;
+    aw_fifo_if.rdreq      = (~aw_fifo_if.empty && maxi_aw.M_AXI_AWREADY);
     
 
-    case (ar_st_ff)
-      AR_IDLE: begin
-        if (r_start_in) begin
-          ar_st_nxt = AR_REQ;
+    case (aw_st_ff)
+      AW_IDLE: begin
+        if (w_start_in) begin
+          aw_st_nxt = AW_REQ;
         end
         
       end
 
-      AR_REQ: begin
-        if (~ar_fifo_if.full) begin
-          ar_fifo_if.wrreq  = 1'b1;
-          if (ar_addr_ff == RD_ADDR_HIGH) begin
-            ar_addr_nxt = RD_ADDR_BASE;
+      AW_REQ: begin
+        if (~aw_fifo_if.full) begin
+          aw_fifo_if.wrreq  = 1'b1;
+          if (aw_addr_ff == WR_ADDR_HIGH) begin
+            aw_addr_nxt = WR_ADDR_BASE;
+            aw_st_nxt   = AW_IDLE;
           end else begin
-            ar_addr_nxt = ar_addr_ff + 8;
+            aw_addr_nxt = aw_addr_ff + (1<<AWSIZE);
           end
         end
       end
       
       default: begin
-        ar_st_nxt = AR_IDLE;
+        aw_st_nxt = AW_IDLE;
       end
     endcase
   end
 
 
   always @(posedge clk) begin
-    ar_addr_ff   <= ar_addr_nxt;
-    ar_st_ff     <= ar_st_nxt;
+    aw_addr_ff   <= aw_addr_nxt;
+    aw_st_ff     <= aw_st_nxt;
     if (~rst_n) begin
-      ar_addr_ff <= RD_ADDR_BASE;
-      ar_st_ff   <= AR_IDLE;
+      aw_addr_ff <= WR_ADDR_BASE;
+      aw_st_ff   <= AW_IDLE;
     end
   end
 
@@ -106,18 +109,18 @@ module aw_ch
       .DOUT_RESET_VALUE  ("0"               )
     , .FIFO_MEMORY_TYPE  ("auto"            )
     , .FIFO_READ_LATENCY (0                 )
-    , .FIFO_WRITE_DEPTH  (RD_OUTSTANDING_MAX)
+    , .FIFO_WRITE_DEPTH  (WR_OUTSTANDING_MAX)
     , .READ_DATA_WIDTH   (ADDR_WIDTH        )
     , .USE_ADV_FEATURES  ("0707"            )
     , .WRITE_DATA_WIDTH  (ADDR_WIDTH        )
-  ) rd_addr_fifo (
-      .dout              (ar_fifo_if.q      )
-    , .empty             (ar_fifo_if.empty  )
-    , .rd_en             (ar_fifo_if.rdreq  )
+  ) wr_addr_fifo (
+      .dout              (aw_fifo_if.q      )
+    , .empty             (aw_fifo_if.empty  )
+    , .rd_en             (aw_fifo_if.rdreq  )
 
-    , .din               (ar_addr_ff        )
-    , .full              (ar_fifo_if.full   )
-    , .wr_en             (ar_fifo_if.wrreq  )
+    , .din               (aw_addr_ff        )
+    , .full              (aw_fifo_if.full   )
+    , .wr_en             (aw_fifo_if.wrreq  )
 
     , .rst               (~rst_n            )
     , .wr_clk            (clk               )

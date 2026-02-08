@@ -14,6 +14,7 @@ module ar_ch
   import mem_agent_types::*;
 #(
     parameter ADDR_WIDTH         = AXI_MASTER_ADDR_WIDTH
+  , parameter ARSIZE             = AXI_MASTER_SIZE
   , parameter RD_ADDR_BASE       = AXI_RD_ADDR_BASE
   , parameter RD_ADDR_HIGH       = AXI_RD_ADDR_HIGH
   , parameter RD_OUTSTANDING_MAX = AXI_RD_OUTSTANDING_MAX
@@ -48,7 +49,7 @@ module ar_ch
     ar_fifo_if.wrreq      = 0;
     maxi_ar.M_AXI_ARID    = '0; 
     maxi_ar.M_AXI_ARLEN   = '0;
-    maxi_ar.M_AXI_ARSIZE  = 3'b011;
+    maxi_ar.M_AXI_ARSIZE  = ARSIZE;
     maxi_ar.M_AXI_ARBURST = 2'b01;
     maxi_ar.M_AXI_ARLOCK  = 2'b00;
     maxi_ar.M_AXI_ARCACHE = 4'b0011;
@@ -81,7 +82,7 @@ module ar_ch
           if (ar_addr_ff == RD_ADDR_HIGH) begin
             ar_addr_nxt = RD_ADDR_BASE;
           end else begin
-            ar_addr_nxt = ar_addr_ff + 8;
+            ar_addr_nxt = ar_addr_ff + (1<<ARSIZE);
           end
         end
       end

@@ -14,10 +14,10 @@ module mem_agent_maxi
 #(
     parameter ADDR_WIDTH         = 32 
   , parameter DATA_WIDTH         = 64 
-  , parameter RD_ADDR_BASE       = 32'h4000_0000 
-  , parameter RD_ADDR_HIGH       = 32'h5000_0000 
-  , parameter WR_ADDR_BASE       = 32'h4000_0000 
-  , parameter WR_ADDR_HIGH       = 32'h5000_0000  
+  , parameter RD_ADDR_BASE       = 32'h4000_0000 // 1 GB
+  , parameter RD_ADDR_HIGH       = 32'h5000_0000 // 1 GB + 256 MB
+  , parameter WR_ADDR_BASE       = 32'h4000_0000 // 1 GB
+  , parameter WR_ADDR_HIGH       = 32'h5000_0000 // 1 GB + 256 MB
   , parameter RD_OUTSTANDING_MAX = 16
   , parameter WR_OUTSTANDING_MAX = 16
   , parameter DBG_CNT_BITS       = 32
@@ -89,9 +89,11 @@ module mem_agent_maxi
   , output wire [DBG_CNT_BITS-1:0] rd_req_bp_out
   , output wire [DBG_CNT_BITS-1:0] wr_req_bp_out
   , output wire [DBG_CNT_BITS-1:0] wr_data_bp_out
+  , output logic [DBG_CNT_BITS-1:0] wr_data_bp_out
   
   , output wire [DBG_CNT_BITS-1:0] timestamp_out
   , output wire [DBG_CNT_BITS-1:0] rd_latency_out
+  , output logic [DBG_CNT_BITS-1:0] wr_latency_out
 );
 
 

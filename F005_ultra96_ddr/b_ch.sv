@@ -12,7 +12,7 @@
 `default_nettype none
 
 
-module w_ch
+module b_ch
   import mem_agent_types::*;
 #(
     parameter DATA_WIDTH = AXI_MASTER_DATA_WIDTH
@@ -20,29 +20,21 @@ module w_ch
   // Reset, Clock
     input  wire         clk
   , input  wire         rst_n
-  , if_axi4_master.w_ch maxi_w
+  , output logic        b_bit_out
+  , if_axi4_master.b_ch maxi_b
 );
 
-  logic [DATA_WIDTH-1:0] wdata_nxt, wdata_ff;
-
+  logic b_bit_nxt, b_bit_ff;
   always_comb begin
-    maxi_w.M_AXI_WDATA = wdata_ff;
-    maxi_w.M_AXI_WSTRB = '1;
-    maxi_w.M_AXI_WLAST = 1'b1;
-    maxi_w.M_AXI_WUSER = '0;
-    maxi_w.M_AXI_WVALID = 1'b1;
-
-    if (maxi_w.M_AXI_WVALID && maxi_w.M_AXI_WREADY) begin
-      wdata_nxt = wdata_ff + 1;
-    end else begin
-      wdata_nxt = wdata_ff;
-    end
+    b_bit_out           = b_bit_ff;
+    b_bit_nxt           = ^{maxi_b.M_AXI_BID, maxi_b.M_AXI_BRESP, maxi_b.M_AXI_BUSER, maxi_b.M_AXI_BVALID};
+    maxi_b.M_AXI_BREADY = 1'b1;
   end
 
   always @(posedge clk) begin
-    wdata_ff   <= wdata_nxt;
+    b_bit_ff   <= b_bit_nxt;
     if (!rst_n) begin
-      wdata_ff <= 0;
+      b_bit_ff <= 1'b0;
     end
   end
 
