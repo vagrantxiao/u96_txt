@@ -13,7 +13,7 @@
 module mem_agent_maxi
 #(
     parameter ADDR_WIDTH         = 32 
-  , parameter DATA_WIDTH         = 64 
+  , parameter DATA_WIDTH         = 128 
   , parameter RD_ADDR_BASE       = 32'h4000_0000 // 1 GB
   , parameter RD_ADDR_HIGH       = 32'h8000_0000 // 2 GB
   , parameter WR_ADDR_BASE       = 32'h4000_0000 // 1 GB

@@ -52,11 +52,12 @@
 #include "xil_io.h"
 #include "sleep.h"
 
-#define CLK_PERIOD  10 // in ns, 10ns for 100MHz
-#define DATA_WIDTH  64 // in bits, adjust according to your design
+#define CLK_PERIOD  10  // in ns, 10ns for 100MHz
+#define DATA_WIDTH  128 // in bits, adjust according to your design
 #define BYTES_PER_TRANSFER (DATA_WIDTH / 8) // Convert bits to bytes
 #define RD_TEST_TIME 10
-#define WR_TEST_TIME 1
+#define WR_TEST_TIME 10
+#define INIT_WAIT_SECOND 10
 
 #define IP_BASE     (XPAR_AXIL_CTRL_0_BASEADDR)
 #define RD_REQ_CNT  (XPAR_AXIL_CTRL_0_BASEADDR+4)
@@ -118,13 +119,10 @@ int main()
     unsigned int timestamp_array[RD_TEST_TIME];
 
     init_platform();
-    for (int i=0; i < 30; i++){
+    for (int i=0; i < INIT_WAIT_SECOND; i++){
     	sleep(1);
     	printf("%d second\n", i);
     }
-
-
-
 
     wr_req_cnt_prev  = Xil_In32(WR_REQ_CNT);
     wr_data_cnt_prev = Xil_In32(WR_DATA_CNT);
@@ -139,7 +137,7 @@ int main()
         wr_req_bp   = Xil_In32(WR_REQ_BP);
         wr_data_bp  = Xil_In32(WR_DATA_BP);
         wr_latency  = Xil_In32(WR_LATENCY);
-        
+
         timestamp   = Xil_In32(TIMESTAMP);
         timestamp_array[i] = timestamp;
         time_diff[i] = (float)(timestamp - timestamp_prev) * CLK_PERIOD / 1e9; // Convert to seconds
@@ -154,17 +152,20 @@ int main()
         wr_req_bp_prev   = wr_req_bp;
         wr_data_bp_prev  = wr_data_bp;
         timestamp_prev   = timestamp;
-        sleep(1);
     }
 
     for (int i=0; i < WR_TEST_TIME; i++){
         printf("Timestamp: %08x\n", timestamp_array[i]);
+        printf("Write Throughput: %.2f MB/s\n", wr_throughput_MBps[i]);
     }
+
+    sleep(5);
 	printf("Time: %.2f s\n", avg(time_diff, WR_TEST_TIME));
 	printf("Write Throughput: %.2f MB/s\n", avg(wr_throughput_MBps, WR_TEST_TIME));
 	printf("Write Request Backpressure Rate: %.2f times/s\n", avg(wr_req_bp_rate, WR_TEST_TIME));
 	printf("Write Data Backpressure Rate: %.2f times/s\n", avg(wr_data_bp_rate, WR_TEST_TIME));
     printf("Average Write Latency: %.2f ns\n", avg(wr_latency_ns, WR_TEST_TIME));
+    printf("We completed %08x write requests\n", Xil_In32(WR_REQ_CNT));
 	printf("\n");
 
     rd_req_cnt_prev  = Xil_In32(RD_REQ_CNT);
@@ -172,7 +173,7 @@ int main()
     rd_req_bp_prev   = Xil_In32(RD_REQ_BP);
     rd_data_bp_prev  = Xil_In32(RD_DATA_BP);
     timestamp_prev   = Xil_In32(TIMESTAMP);
-    
+
     start_read();
     for (int i=0; i < RD_TEST_TIME; i++){
         rd_req_cnt  = Xil_In32(RD_REQ_CNT);
@@ -194,11 +195,12 @@ int main()
         rd_req_bp_prev   = rd_req_bp;
         rd_data_bp_prev  = rd_data_bp;
         timestamp_prev   = timestamp;
-        sleep(1);
     }
 
     for (int i=0; i < RD_TEST_TIME; i++){
         printf("Timestamp: %08x\n", timestamp_array[i]);
+        printf("Read Throughput: %.2f MB/s\n", rd_throughput_MBps[i]);
+
     }
 	printf("Time: %.2f s\n", avg(time_diff, RD_TEST_TIME));
 	printf("Read Throughput: %.2f MB/s\n", avg(rd_throughput_MBps, RD_TEST_TIME));

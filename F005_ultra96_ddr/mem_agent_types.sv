@@ -1,7 +1,7 @@
 package mem_agent_types;
 
-    localparam AXI_MASTER_DATA_WIDTH  = 64;
-    localparam AXI_MASTER_SIZE        = 3'b011; // 8 bytes (64 bits)
+    localparam AXI_MASTER_DATA_WIDTH  = 128;
+    localparam AXI_MASTER_SIZE        = 3'b100; // 16 bytes (128 bits)
     localparam AXI_MASTER_ADDR_WIDTH  = 32;
     localparam AXI_RD_OUTSTANDING_MAX = 16;
     localparam AXI_WR_OUTSTANDING_MAX = 16;

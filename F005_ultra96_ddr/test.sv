@@ -1,13 +1,16 @@
+`timescale 1 ps / 1 ps
+
 module test();
 
 parameter RD_LATENCY = 10;
 parameter WR_LATENCY = 20;
-
+parameter DATA_WIDTH = 128;
+parameter ADDR_WIDTH = 32;
 
 reg         ARESETN;
 reg         ACLK;
 wire [0:0]  M_AXI_AWID;
-wire [31:0] M_AXI_AWADDR;
+wire [ADDR_WIDTH-1:0] M_AXI_AWADDR;
 wire [7:0]  M_AXI_AWLEN;
 wire [2:0]  M_AXI_AWSIZE;
 wire [1:0]  M_AXI_AWBURST;
@@ -18,8 +21,8 @@ wire [3:0]  M_AXI_AWQOS;
 wire [7:0]  M_AXI_AWUSER;
 wire        M_AXI_AWVALID;
 reg         M_AXI_AWREADY;
-wire [63:0] M_AXI_WDATA;
-wire [7:0]  M_AXI_WSTRB;
+wire [DATA_WIDTH-1:0] M_AXI_WDATA;
+wire [DATA_WIDTH/8-1:0]  M_AXI_WSTRB;
 wire        M_AXI_WLAST;
 wire [7:0]  M_AXI_WUSER;
 wire        M_AXI_WVALID;
@@ -30,7 +33,7 @@ reg [7:0]   M_AXI_BUSER;
 reg         M_AXI_BVALID;
 wire        M_AXI_BREADY;
 wire [0:0]  M_AXI_ARID;
-wire [31:0] M_AXI_ARADDR;
+wire [ADDR_WIDTH-1:0] M_AXI_ARADDR;
 wire [7:0]  M_AXI_ARLEN;
 wire [2:0]  M_AXI_ARSIZE;
 wire [1:0]  M_AXI_ARBURST;
@@ -42,7 +45,7 @@ wire [7:0]  M_AXI_ARUSER;
 wire        M_AXI_ARVALID;
 reg         M_AXI_ARREADY;
 reg [0:0]   M_AXI_RID;
-reg [63:0]  M_AXI_RDATA;
+reg [DATA_WIDTH-1:0]  M_AXI_RDATA;
 reg [1:0]   M_AXI_RRESP;
 reg         M_AXI_RLAST;
 reg [7:0]   M_AXI_RUSER;
