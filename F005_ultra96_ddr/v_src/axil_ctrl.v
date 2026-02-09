@@ -15,8 +15,39 @@
 	)
 	(
 		// Users to add ports here
-		output       rd_start_out,
-		output       wr_start_out,
+		output       rd_start_0_out,
+		output       rd_start_1_out,
+		output       rd_start_2_out,
+		output       rd_start_3_out,
+		output       rd_start_4_out,
+		output       rd_start_5_out,
+		output       rd_start_6_out,
+		output       rd_start_7_out,
+		output       rd_start_8_out,
+		output       rd_start_9_out,
+		output       rd_start_10_out,
+		output       rd_start_11_out,
+		output       rd_start_12_out,
+		output       rd_start_13_out,
+		output       rd_start_14_out,
+		output       rd_start_15_out,
+
+		output       wr_start0_out,
+		output       wr_start1_out,
+		output       wr_start2_out,
+		output       wr_start3_out,
+		output       wr_start4_out,
+		output       wr_start5_out,
+		output       wr_start6_out,
+		output       wr_start7_out,
+		output       wr_start8_out,
+		output       wr_start9_out,
+		output       wr_start10_out,
+		output       wr_start11_out,
+		output       wr_start12_out,
+		output       wr_start13_out,
+		output       wr_start14_out,
+		output       wr_start15_out,
 
 		input [31:0] rd_req_cnt_in,
 		input [31:0] rd_data_cnt_in,
@@ -31,8 +62,38 @@
         input [31:0] rd_latency_in,
 		input [31:0] wr_latency_in,
         
-		input        rd_bit_in,
-		input        b_bit_in,
+		input        clinet0_in,
+		input        clinet1_in,
+		input        clinet2_in,
+		input        clinet3_in,
+		input        clinet4_in,
+		input        clinet5_in,
+		input        clinet6_in,
+		input        clinet7_in,
+		input        clinet8_in,
+		input        clinet9_in,
+		input        clinet10_in,
+		input        clinet11_in,
+		input        clinet12_in,
+		input        clinet13_in,
+		input        clinet14_in,
+		input        clinet15_in,
+		input        clinet16_in,
+		input        clinet17_in,
+		input        clinet18_in,
+		input        clinet19_in,
+		input        clinet20_in,
+		input        clinet21_in,
+		input        clinet22_in,
+		input        clinet23_in,
+		input        clinet24_in,
+		input        clinet25_in,
+		input        clinet26_in,
+		input        clinet27_in,
+		input        clinet28_in,
+		input        clinet29_in,
+		input        clinet30_in,
+		input        clinet31_in,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -548,8 +609,39 @@
 	end    
 
 	// Add user logic here
-	assign rd_start_out = slv_reg0[0];
-	assign wr_start_out = slv_reg0[1];
+	assign rd_start_0_out  = slv_reg0[0];
+	assign rd_start_1_out  = slv_reg0[1];
+	assign rd_start_2_out  = slv_reg0[2];
+	assign rd_start_3_out  = slv_reg0[3];
+	assign rd_start_4_out  = slv_reg0[4];
+	assign rd_start_5_out  = slv_reg0[5];
+	assign rd_start_6_out  = slv_reg0[6];
+	assign rd_start_7_out  = slv_reg0[7];
+	assign rd_start_8_out  = slv_reg0[8];
+	assign rd_start_9_out  = slv_reg0[9];
+	assign rd_start_10_out = slv_reg0[10];
+	assign rd_start_11_out = slv_reg0[11];
+	assign rd_start_12_out = slv_reg0[12];
+	assign rd_start_13_out = slv_reg0[13];
+	assign rd_start_14_out = slv_reg0[14];
+	assign rd_start_15_out = slv_reg0[15];
+
+	assign wr_start_0_out  = slv_reg0[16];
+	assign wr_start_1_out  = slv_reg0[17];
+	assign wr_start_2_out  = slv_reg0[18];
+	assign wr_start_3_out  = slv_reg0[19];
+	assign wr_start_4_out  = slv_reg0[20];
+	assign wr_start_5_out  = slv_reg0[21];
+	assign wr_start_6_out  = slv_reg0[22];
+	assign wr_start_7_out  = slv_reg0[23];
+	assign wr_start_8_out  = slv_reg0[24];
+	assign wr_start_9_out  = slv_reg0[25];
+	assign wr_start_10_out = slv_reg0[26];
+	assign wr_start_11_out = slv_reg0[27];
+	assign wr_start_12_out = slv_reg0[28];
+	assign wr_start_13_out = slv_reg0[29];
+	assign wr_start_14_out = slv_reg0[30];
+	assign wr_start_15_out = slv_reg0[31];
 
 	assign slv_reg1     = rd_req_cnt_in;
 	assign slv_reg2     = rd_data_cnt_in;
@@ -562,7 +654,40 @@
     assign slv_reg9     =  timestamp_in;
     assign slv_reg10    =  rd_latency_in;
 	assign slv_reg11    =  wr_latency_in;
-	assign slv_reg12    =  {30'd0, rd_bit_in, b_bit_in};
+	
+	assign slv_reg12[0]  = clinet0_in;
+	assign slv_reg12[1]  = clinet1_in;
+	assign slv_reg12[2]  = clinet2_in;
+	assign slv_reg12[3]  = clinet3_in;
+	assign slv_reg12[4]  = clinet4_in;
+	assign slv_reg12[5]  = clinet5_in;
+	assign slv_reg12[6]  = clinet6_in;
+	assign slv_reg12[7]  = clinet7_in;
+	assign slv_reg12[8]  = clinet8_in;
+	assign slv_reg12[9]  = clinet9_in;
+	assign slv_reg12[10] = clinet10_in;
+	assign slv_reg12[11] = clinet11_in;
+	assign slv_reg12[12] = clinet12_in;
+	assign slv_reg12[13] = clinet13_in;
+	assign slv_reg12[14] = clinet14_in;
+	assign slv_reg12[15] = clinet15_in;
+	assign slv_reg12[16] = clinet16_in;
+	assign slv_reg12[17] = clinet17_in;
+	assign slv_reg12[18] = clinet18_in;
+	assign slv_reg12[19] = clinet19_in;
+	assign slv_reg12[20] = clinet20_in;
+	assign slv_reg12[21] = clinet21_in;
+	assign slv_reg12[22] = clinet22_in;
+	assign slv_reg12[23] = clinet23_in;
+	assign slv_reg12[24] = clinet24_in;
+	assign slv_reg12[25] = clinet25_in;
+	assign slv_reg12[26] = clinet26_in;
+	assign slv_reg12[27] = clinet27_in;
+	assign slv_reg12[28] = clinet28_in;
+	assign slv_reg12[29] = clinet29_in;
+	assign slv_reg12[30] = clinet30_in;
+	assign slv_reg12[31] = clinet31_in;
+
 	// User logic ends
 
 	endmodule

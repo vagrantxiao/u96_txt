@@ -52,7 +52,7 @@
 #include "xil_io.h"
 #include "sleep.h"
 
-#define CLK_PERIOD  10  // in ns, 10ns for 100MHz
+#define CLK_PERIOD  4  // in ns, 4ns for 250MHz
 #define DATA_WIDTH  128 // in bits, adjust according to your design
 #define BYTES_PER_TRANSFER (DATA_WIDTH / 8) // Convert bits to bytes
 #define RD_TEST_TIME 10
