@@ -15,22 +15,22 @@
 	)
 	(
 		// Users to add ports here
-		output       rd_start_0_out,
-		output       rd_start_1_out,
-		output       rd_start_2_out,
-		output       rd_start_3_out,
-		output       rd_start_4_out,
-		output       rd_start_5_out,
-		output       rd_start_6_out,
-		output       rd_start_7_out,
-		output       rd_start_8_out,
-		output       rd_start_9_out,
-		output       rd_start_10_out,
-		output       rd_start_11_out,
-		output       rd_start_12_out,
-		output       rd_start_13_out,
-		output       rd_start_14_out,
-		output       rd_start_15_out,
+		output       rd_start0_out,
+		output       rd_start1_out,
+		output       rd_start2_out,
+		output       rd_start3_out,
+		output       rd_start4_out,
+		output       rd_start5_out,
+		output       rd_start6_out,
+		output       rd_start7_out,
+		output       rd_start8_out,
+		output       rd_start9_out,
+		output       rd_start10_out,
+		output       rd_start11_out,
+		output       rd_start12_out,
+		output       rd_start13_out,
+		output       rd_start14_out,
+		output       rd_start15_out,
 
 		output       wr_start0_out,
 		output       wr_start1_out,
@@ -609,39 +609,39 @@
 	end    
 
 	// Add user logic here
-	assign rd_start_0_out  = slv_reg0[0];
-	assign rd_start_1_out  = slv_reg0[1];
-	assign rd_start_2_out  = slv_reg0[2];
-	assign rd_start_3_out  = slv_reg0[3];
-	assign rd_start_4_out  = slv_reg0[4];
-	assign rd_start_5_out  = slv_reg0[5];
-	assign rd_start_6_out  = slv_reg0[6];
-	assign rd_start_7_out  = slv_reg0[7];
-	assign rd_start_8_out  = slv_reg0[8];
-	assign rd_start_9_out  = slv_reg0[9];
-	assign rd_start_10_out = slv_reg0[10];
-	assign rd_start_11_out = slv_reg0[11];
-	assign rd_start_12_out = slv_reg0[12];
-	assign rd_start_13_out = slv_reg0[13];
-	assign rd_start_14_out = slv_reg0[14];
-	assign rd_start_15_out = slv_reg0[15];
+	assign rd_start0_out  = slv_reg0[0];
+	assign rd_start1_out  = slv_reg0[1];
+	assign rd_start2_out  = slv_reg0[2];
+	assign rd_start3_out  = slv_reg0[3];
+	assign rd_start4_out  = slv_reg0[4];
+	assign rd_start5_out  = slv_reg0[5];
+	assign rd_start6_out  = slv_reg0[6];
+	assign rd_start7_out  = slv_reg0[7];
+	assign rd_start8_out  = slv_reg0[8];
+	assign rd_start9_out  = slv_reg0[9];
+	assign rd_start10_out = slv_reg0[10];
+	assign rd_start11_out = slv_reg0[11];
+	assign rd_start12_out = slv_reg0[12];
+	assign rd_start13_out = slv_reg0[13];
+	assign rd_start14_out = slv_reg0[14];
+	assign rd_start15_out = slv_reg0[15];
 
-	assign wr_start_0_out  = slv_reg0[16];
-	assign wr_start_1_out  = slv_reg0[17];
-	assign wr_start_2_out  = slv_reg0[18];
-	assign wr_start_3_out  = slv_reg0[19];
-	assign wr_start_4_out  = slv_reg0[20];
-	assign wr_start_5_out  = slv_reg0[21];
-	assign wr_start_6_out  = slv_reg0[22];
-	assign wr_start_7_out  = slv_reg0[23];
-	assign wr_start_8_out  = slv_reg0[24];
-	assign wr_start_9_out  = slv_reg0[25];
-	assign wr_start_10_out = slv_reg0[26];
-	assign wr_start_11_out = slv_reg0[27];
-	assign wr_start_12_out = slv_reg0[28];
-	assign wr_start_13_out = slv_reg0[29];
-	assign wr_start_14_out = slv_reg0[30];
-	assign wr_start_15_out = slv_reg0[31];
+	assign wr_start0_out  = slv_reg0[16];
+	assign wr_start1_out  = slv_reg0[17];
+	assign wr_start2_out  = slv_reg0[18];
+	assign wr_start3_out  = slv_reg0[19];
+	assign wr_start4_out  = slv_reg0[20];
+	assign wr_start5_out  = slv_reg0[21];
+	assign wr_start6_out  = slv_reg0[22];
+	assign wr_start7_out  = slv_reg0[23];
+	assign wr_start8_out  = slv_reg0[24];
+	assign wr_start9_out  = slv_reg0[25];
+	assign wr_start10_out = slv_reg0[26];
+	assign wr_start11_out = slv_reg0[27];
+	assign wr_start12_out = slv_reg0[28];
+	assign wr_start13_out = slv_reg0[29];
+	assign wr_start14_out = slv_reg0[30];
+	assign wr_start15_out = slv_reg0[31];
 
 	assign slv_reg1     = rd_req_cnt_in;
 	assign slv_reg2     = rd_data_cnt_in;

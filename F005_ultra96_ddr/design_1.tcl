@@ -718,10 +718,10 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM1_FPD [get_bd_intf_pins ps8_0_axi_periph/S01_AXI] [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM1_FPD]
 
   # Create port connections
-  connect_bd_net -net axil_ctrl_0_rd_start_1_out [get_bd_pins axil_ctrl_0/rd_start_1_out] [get_bd_pins mem_agent_maxi_1/r_start_in]
-  connect_bd_net -net axil_ctrl_0_rd_start_2_out [get_bd_pins axil_ctrl_0/rd_start_2_out] [get_bd_pins mem_agent_maxi_2/r_start_in]
-  connect_bd_net -net axil_ctrl_0_rd_start_3_out [get_bd_pins axil_ctrl_0/rd_start_3_out] [get_bd_pins mem_agent_maxi_3/r_start_in]
-  connect_bd_net -net axil_ctrl_0_rd_start_out [get_bd_pins axil_ctrl_0/rd_start_0_out] [get_bd_pins mem_agent_maxi_0/r_start_in]
+  connect_bd_net -net axil_ctrl_0_rd_start_1_out [get_bd_pins axil_ctrl_0/rd_start1_out] [get_bd_pins mem_agent_maxi_1/r_start_in]
+  connect_bd_net -net axil_ctrl_0_rd_start_2_out [get_bd_pins axil_ctrl_0/rd_start3_out] [get_bd_pins mem_agent_maxi_2/r_start_in]
+  connect_bd_net -net axil_ctrl_0_rd_start_3_out [get_bd_pins axil_ctrl_0/rd_start2_out] [get_bd_pins mem_agent_maxi_3/r_start_in]
+  connect_bd_net -net axil_ctrl_0_rd_start_out [get_bd_pins axil_ctrl_0/rd_start0_out] [get_bd_pins mem_agent_maxi_0/r_start_in]
   connect_bd_net -net axil_ctrl_0_wr_start1_out [get_bd_pins axil_ctrl_0/wr_start1_out] [get_bd_pins mem_agent_maxi_1/w_start_in]
   connect_bd_net -net axil_ctrl_0_wr_start2_out [get_bd_pins axil_ctrl_0/wr_start2_out] [get_bd_pins mem_agent_maxi_2/w_start_in]
   connect_bd_net -net axil_ctrl_0_wr_start3_out [get_bd_pins axil_ctrl_0/wr_start3_out] [get_bd_pins mem_agent_maxi_3/w_start_in]

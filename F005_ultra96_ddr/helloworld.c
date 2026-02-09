@@ -75,12 +75,12 @@
 
 
 void start_read() {
-    Xil_Out32(IP_BASE, 1);
+    Xil_Out32(IP_BASE, 0x00000001);
     Xil_Out32(IP_BASE, 0);
 }
 
 void start_write() {
-    Xil_Out32(IP_BASE, 2);
+    Xil_Out32(IP_BASE, 0x00010000);
     Xil_Out32(IP_BASE, 0);
 }
 
