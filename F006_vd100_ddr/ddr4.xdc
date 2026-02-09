@@ -123,3 +123,8 @@ set_property IOSTANDARD DIFF_SSTL12 [get_ports {sys_clk_clk_n[0]}]
 set_property IOSTANDARD DIFF_SSTL12 [get_ports {sys_clk_clk_p[0]}]
 
 create_clock -period 5.000 -name sys_clk -waveform {0.000 2.500} [get_ports {sys_clk_clk_p[0]}]
+
+set_property PACKAGE_PIN E20 [get_ports led]
+set_property IOSTANDARD LVCMOS15 [get_ports led]
+s
+

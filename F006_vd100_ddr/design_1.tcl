@@ -43,6 +43,13 @@ if { [string first $scripts_vivado_version $current_vivado_version] == -1 } {
 # To test this script, run the following commands from Vivado Tcl console:
 # source design_1_script.tcl
 
+
+# The design that will be created by this Tcl script contains the following 
+# module references:
+# axil_ctrl, mem_agent_maxi
+
+# Please add the sources of those modules before sourcing this Tcl script.
+
 # If there is no project opened, this script will create a
 # project, but make sure you do not have an existing project
 # <./myproj/project_1.xpr> in the current working folder.
@@ -132,6 +139,9 @@ if { $bCheckIPs == 1 } {
 xilinx.com:ip:versal_cips:3.4\
 xilinx.com:ip:axi_noc:1.0\
 xilinx.com:ip:util_ds_buf:2.2\
+xilinx.com:ip:smartconnect:1.0\
+xilinx.com:ip:proc_sys_reset:5.0\
+xilinx.com:ip:xlconstant:1.1\
 "
 
    set list_ips_missing ""
@@ -149,6 +159,32 @@ xilinx.com:ip:util_ds_buf:2.2\
       set bCheckIPsPassed 0
    }
 
+}
+
+##################################################################
+# CHECK Modules
+##################################################################
+set bCheckModules 1
+if { $bCheckModules == 1 } {
+   set list_check_mods "\ 
+axil_ctrl\
+mem_agent_maxi\
+"
+
+   set list_mods_missing ""
+   common::send_gid_msg -ssname BD::TCL -id 2020 -severity "INFO" "Checking if the following modules exist in the project's sources: $list_check_mods ."
+
+   foreach mod_vlnv $list_check_mods {
+      if { [can_resolve_reference $mod_vlnv] == 0 } {
+         lappend list_mods_missing $mod_vlnv
+      }
+   }
+
+   if { $list_mods_missing ne "" } {
+      catch {common::send_gid_msg -ssname BD::TCL -id 2021 -severity "ERROR" "The following module(s) are not found in the project: $list_mods_missing" }
+      common::send_gid_msg -ssname BD::TCL -id 2022 -severity "INFO" "Please add source files for the missing module(s) above."
+      set bCheckIPsPassed 0
+   }
 }
 
 if { $bCheckIPsPassed != 1 } {
@@ -204,6 +240,7 @@ proc create_root_design { parentCell } {
 
 
   # Create ports
+  set led [ create_bd_port -dir O led ]
 
   # Create instance: versal_cips_0, and set properties
   set versal_cips_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:versal_cips:3.4 versal_cips_0 ]
@@ -291,17 +328,23 @@ proc create_root_design { parentCell } {
     CONFIG.MC_TRRD_S {9} \
     CONFIG.MC_TRRD_S_MIN {9} \
     CONFIG.MC_USER_DEFINED_ADDRESS_MAP {16RA-2BA-1BG-10CA} \
-    CONFIG.NUM_CLKS {6} \
+    CONFIG.NUM_CLKS {8} \
     CONFIG.NUM_MC {1} \
     CONFIG.NUM_MCP {4} \
-    CONFIG.NUM_MI {0} \
-    CONFIG.NUM_SI {6} \
+    CONFIG.NUM_MI {1} \
+    CONFIG.NUM_SI {7} \
   ] $axi_noc_0
 
 
   set_property -dict [ list \
+   CONFIG.APERTURES {{0x201_0000_0000 1G}} \
+   CONFIG.CATEGORY {pl} \
+ ] [get_bd_intf_pins /axi_noc_0/M00_AXI]
+
+  set_property -dict [ list \
    CONFIG.REGION {0} \
-   CONFIG.CONNECTIONS {MC_3 {read_bw {100} write_bw {100} read_avg_burst {4} write_avg_burst {4}}} \
+   CONFIG.CONNECTIONS {M00_AXI {read_bw {5} write_bw {5}} MC_3 {read_bw {100} write_bw {100} read_avg_burst {4} write_avg_burst {4}}} \
+   CONFIG.DEST_IDS {M00_AXI:0x40} \
    CONFIG.NOC_PARAMS {} \
    CONFIG.CATEGORY {ps_cci} \
  ] [get_bd_intf_pins /axi_noc_0/S00_AXI]
@@ -342,6 +385,12 @@ proc create_root_design { parentCell } {
  ] [get_bd_intf_pins /axi_noc_0/S05_AXI]
 
   set_property -dict [ list \
+   CONFIG.CONNECTIONS {MC_0 {read_bw {500} write_bw {500} read_avg_burst {4} write_avg_burst {4}}} \
+   CONFIG.NOC_PARAMS {} \
+   CONFIG.CATEGORY {pl} \
+ ] [get_bd_intf_pins /axi_noc_0/S06_AXI]
+
+  set_property -dict [ list \
    CONFIG.ASSOCIATED_BUSIF {S00_AXI} \
  ] [get_bd_pins /axi_noc_0/aclk0]
 
@@ -365,11 +414,60 @@ proc create_root_design { parentCell } {
    CONFIG.ASSOCIATED_BUSIF {S05_AXI} \
  ] [get_bd_pins /axi_noc_0/aclk5]
 
+  set_property -dict [ list \
+   CONFIG.ASSOCIATED_BUSIF {M00_AXI:S06_AXI} \
+ ] [get_bd_pins /axi_noc_0/aclk6]
+
+  set_property -dict [ list \
+   CONFIG.ASSOCIATED_BUSIF {} \
+ ] [get_bd_pins /axi_noc_0/aclk7]
+
   # Create instance: util_ds_buf_0, and set properties
   set util_ds_buf_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:util_ds_buf:2.2 util_ds_buf_0 ]
 
+  # Create instance: axil_ctrl_0, and set properties
+  set block_name axil_ctrl
+  set block_cell_name axil_ctrl_0
+  if { [catch {set axil_ctrl_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $axil_ctrl_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: axil_ctrl_0_smc, and set properties
+  set axil_ctrl_0_smc [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 axil_ctrl_0_smc ]
+  set_property -dict [list \
+    CONFIG.NUM_MI {1} \
+    CONFIG.NUM_SI {1} \
+  ] $axil_ctrl_0_smc
+
+
+  # Create instance: rst_versal_cips_0_239M, and set properties
+  set rst_versal_cips_0_239M [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 rst_versal_cips_0_239M ]
+
+  # Create instance: mem_agent_maxi_0, and set properties
+  set block_name mem_agent_maxi
+  set block_cell_name mem_agent_maxi_0
+  if { [catch {set mem_agent_maxi_0 [create_bd_cell -type module -reference $block_name $block_cell_name] } errmsg] } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2095 -severity "ERROR" "Unable to add referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   } elseif { $mem_agent_maxi_0 eq "" } {
+     catch {common::send_gid_msg -ssname BD::TCL -id 2096 -severity "ERROR" "Unable to referenced block <$block_name>. Please add the files for ${block_name}'s definition into the project."}
+     return 1
+   }
+  
+  # Create instance: xlconstant_0, and set properties
+  set xlconstant_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:xlconstant:1.1 xlconstant_0 ]
+  set_property CONFIG.CONST_VAL {0} $xlconstant_0
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net axi_noc_0_CH0_DDR4_0 [get_bd_intf_ports DDR4] [get_bd_intf_pins axi_noc_0/CH0_DDR4_0]
+  connect_bd_intf_net -intf_net axi_noc_0_M00_AXI [get_bd_intf_pins axil_ctrl_0_smc/S00_AXI] [get_bd_intf_pins axi_noc_0/M00_AXI]
+  connect_bd_intf_net -intf_net axil_ctrl_0_smc_M00_AXI [get_bd_intf_pins axil_ctrl_0/S_AXI] [get_bd_intf_pins axil_ctrl_0_smc/M00_AXI]
+  connect_bd_intf_net -intf_net mem_agent_maxi_0_M_AXI [get_bd_intf_pins mem_agent_maxi_0/M_AXI] [get_bd_intf_pins axi_noc_0/S06_AXI]
   connect_bd_intf_net -intf_net sys_clk_1 [get_bd_intf_ports sys_clk] [get_bd_intf_pins util_ds_buf_0/CLK_IN_D]
   connect_bd_intf_net -intf_net versal_cips_0_FPD_CCI_NOC_0 [get_bd_intf_pins versal_cips_0/FPD_CCI_NOC_0] [get_bd_intf_pins axi_noc_0/S00_AXI]
   connect_bd_intf_net -intf_net versal_cips_0_FPD_CCI_NOC_1 [get_bd_intf_pins versal_cips_0/FPD_CCI_NOC_1] [get_bd_intf_pins axi_noc_0/S01_AXI]
@@ -379,26 +477,49 @@ proc create_root_design { parentCell } {
   connect_bd_intf_net -intf_net versal_cips_0_PMC_NOC_AXI_0 [get_bd_intf_pins versal_cips_0/PMC_NOC_AXI_0] [get_bd_intf_pins axi_noc_0/S05_AXI]
 
   # Create port connections
+  connect_bd_net -net axil_ctrl_0_rd_start0_out [get_bd_pins axil_ctrl_0/rd_start0_out] [get_bd_pins mem_agent_maxi_0/r_start_in]
+  connect_bd_net -net axil_ctrl_0_wr_start0_out [get_bd_pins axil_ctrl_0/wr_start0_out] [get_bd_pins mem_agent_maxi_0/w_start_in]
+  connect_bd_net -net axil_ctrl_0_wr_start15_out [get_bd_pins axil_ctrl_0/wr_start15_out] [get_bd_ports led]
+  connect_bd_net -net mem_agent_maxi_0_b_bit_out [get_bd_pins mem_agent_maxi_0/b_bit_out] [get_bd_pins axil_ctrl_0/clinet1_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_bit_out [get_bd_pins mem_agent_maxi_0/rd_bit_out] [get_bd_pins axil_ctrl_0/clinet0_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_data_bp_out [get_bd_pins mem_agent_maxi_0/rd_data_bp_out] [get_bd_pins axil_ctrl_0/rd_data_bp_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_data_cnt_out [get_bd_pins mem_agent_maxi_0/rd_data_cnt_out] [get_bd_pins axil_ctrl_0/rd_data_cnt_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_latency_out [get_bd_pins mem_agent_maxi_0/rd_latency_out] [get_bd_pins axil_ctrl_0/rd_latency_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_req_bp_out [get_bd_pins mem_agent_maxi_0/rd_req_bp_out] [get_bd_pins axil_ctrl_0/rd_req_bp_in]
+  connect_bd_net -net mem_agent_maxi_0_rd_req_cnt_out [get_bd_pins mem_agent_maxi_0/rd_req_cnt_out] [get_bd_pins axil_ctrl_0/rd_req_cnt_in]
+  connect_bd_net -net mem_agent_maxi_0_timestamp_out [get_bd_pins mem_agent_maxi_0/timestamp_out] [get_bd_pins axil_ctrl_0/timestamp_in]
+  connect_bd_net -net mem_agent_maxi_0_wr_data_bp_out [get_bd_pins mem_agent_maxi_0/wr_data_bp_out] [get_bd_pins axil_ctrl_0/wr_data_bp_in]
+  connect_bd_net -net mem_agent_maxi_0_wr_data_cnt_out [get_bd_pins mem_agent_maxi_0/wr_data_cnt_out] [get_bd_pins axil_ctrl_0/wr_data_cnt_in]
+  connect_bd_net -net mem_agent_maxi_0_wr_latency_out [get_bd_pins mem_agent_maxi_0/wr_latency_out] [get_bd_pins axil_ctrl_0/wr_latency_in]
+  connect_bd_net -net mem_agent_maxi_0_wr_req_bp_out [get_bd_pins mem_agent_maxi_0/wr_req_bp_out] [get_bd_pins axil_ctrl_0/wr_req_bp_in]
+  connect_bd_net -net mem_agent_maxi_0_wr_req_cnt_out [get_bd_pins mem_agent_maxi_0/wr_req_cnt_out] [get_bd_pins axil_ctrl_0/wr_req_cnt_in]
+  connect_bd_net -net rst_versal_cips_0_239M_peripheral_aresetn [get_bd_pins rst_versal_cips_0_239M/peripheral_aresetn] [get_bd_pins axil_ctrl_0/S_AXI_ARESETN] [get_bd_pins axil_ctrl_0_smc/aresetn] [get_bd_pins mem_agent_maxi_0/ARESETN]
   connect_bd_net -net util_ds_buf_0_IBUF_OUT [get_bd_pins util_ds_buf_0/IBUF_OUT] [get_bd_pins axi_noc_0/sys_clk0]
   connect_bd_net -net versal_cips_0_fpd_cci_noc_axi0_clk [get_bd_pins versal_cips_0/fpd_cci_noc_axi0_clk] [get_bd_pins axi_noc_0/aclk0]
   connect_bd_net -net versal_cips_0_fpd_cci_noc_axi1_clk [get_bd_pins versal_cips_0/fpd_cci_noc_axi1_clk] [get_bd_pins axi_noc_0/aclk1]
   connect_bd_net -net versal_cips_0_fpd_cci_noc_axi2_clk [get_bd_pins versal_cips_0/fpd_cci_noc_axi2_clk] [get_bd_pins axi_noc_0/aclk2]
   connect_bd_net -net versal_cips_0_fpd_cci_noc_axi3_clk [get_bd_pins versal_cips_0/fpd_cci_noc_axi3_clk] [get_bd_pins axi_noc_0/aclk3]
   connect_bd_net -net versal_cips_0_lpd_axi_noc_clk [get_bd_pins versal_cips_0/lpd_axi_noc_clk] [get_bd_pins axi_noc_0/aclk4]
+  connect_bd_net -net versal_cips_0_pl0_ref_clk [get_bd_pins versal_cips_0/pl0_ref_clk] [get_bd_pins axil_ctrl_0/S_AXI_ACLK] [get_bd_pins axi_noc_0/aclk7] [get_bd_pins rst_versal_cips_0_239M/slowest_sync_clk] [get_bd_pins axil_ctrl_0_smc/aclk] [get_bd_pins mem_agent_maxi_0/ACLK] [get_bd_pins axi_noc_0/aclk6]
+  connect_bd_net -net versal_cips_0_pl0_resetn [get_bd_pins versal_cips_0/pl0_resetn] [get_bd_pins rst_versal_cips_0_239M/ext_reset_in]
   connect_bd_net -net versal_cips_0_pmc_axi_noc_axi0_clk [get_bd_pins versal_cips_0/pmc_axi_noc_axi0_clk] [get_bd_pins axi_noc_0/aclk5]
+  connect_bd_net -net xlconstant_0_dout [get_bd_pins xlconstant_0/dout] [get_bd_pins axil_ctrl_0/clinet2_in] [get_bd_pins axil_ctrl_0/clinet3_in] [get_bd_pins axil_ctrl_0/clinet4_in] [get_bd_pins axil_ctrl_0/clinet5_in] [get_bd_pins axil_ctrl_0/clinet6_in] [get_bd_pins axil_ctrl_0/clinet7_in] [get_bd_pins axil_ctrl_0/clinet8_in] [get_bd_pins axil_ctrl_0/clinet9_in] [get_bd_pins axil_ctrl_0/clinet10_in] [get_bd_pins axil_ctrl_0/clinet11_in] [get_bd_pins axil_ctrl_0/clinet12_in] [get_bd_pins axil_ctrl_0/clinet13_in] [get_bd_pins axil_ctrl_0/clinet14_in] [get_bd_pins axil_ctrl_0/clinet15_in] [get_bd_pins axil_ctrl_0/clinet16_in] [get_bd_pins axil_ctrl_0/clinet17_in] [get_bd_pins axil_ctrl_0/clinet18_in] [get_bd_pins axil_ctrl_0/clinet19_in] [get_bd_pins axil_ctrl_0/clinet20_in] [get_bd_pins axil_ctrl_0/clinet21_in] [get_bd_pins axil_ctrl_0/clinet22_in] [get_bd_pins axil_ctrl_0/clinet23_in] [get_bd_pins axil_ctrl_0/clinet24_in] [get_bd_pins axil_ctrl_0/clinet25_in] [get_bd_pins axil_ctrl_0/clinet26_in] [get_bd_pins axil_ctrl_0/clinet27_in] [get_bd_pins axil_ctrl_0/clinet28_in] [get_bd_pins axil_ctrl_0/clinet29_in] [get_bd_pins axil_ctrl_0/clinet30_in] [get_bd_pins axil_ctrl_0/clinet31_in]
 
   # Create address segments
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/FPD_CCI_NOC_0] [get_bd_addr_segs axi_noc_0/S00_AXI/C3_DDR_LOW0] -force
+  assign_bd_address -offset 0x020100000000 -range 0x00001000 -target_address_space [get_bd_addr_spaces versal_cips_0/FPD_CCI_NOC_0] [get_bd_addr_segs axil_ctrl_0/S_AXI/reg0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/FPD_CCI_NOC_1] [get_bd_addr_segs axi_noc_0/S01_AXI/C2_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/FPD_CCI_NOC_2] [get_bd_addr_segs axi_noc_0/S02_AXI/C0_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/FPD_CCI_NOC_3] [get_bd_addr_segs axi_noc_0/S03_AXI/C1_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/LPD_AXI_NOC_0] [get_bd_addr_segs axi_noc_0/S04_AXI/C3_DDR_LOW0] -force
   assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces versal_cips_0/PMC_NOC_AXI_0] [get_bd_addr_segs axi_noc_0/S05_AXI/C2_DDR_LOW0] -force
+  assign_bd_address -offset 0x00000000 -range 0x80000000 -target_address_space [get_bd_addr_spaces mem_agent_maxi_0/M_AXI] [get_bd_addr_segs axi_noc_0/S06_AXI/C0_DDR_LOW0] -force
 
 
   # Restore current instance
   current_bd_instance $oldCurInst
 
+  validate_bd_design
   save_bd_design
 }
 # End of create_root_design()
@@ -410,6 +531,4 @@ proc create_root_design { parentCell } {
 
 create_root_design ""
 
-
-common::send_gid_msg -ssname BD::TCL -id 2053 -severity "WARNING" "This Tcl script was generated from a block design that has not been validated. It is possible that design <$design_name> may result in errors during validation."
 
