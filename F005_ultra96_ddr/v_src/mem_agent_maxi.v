@@ -15,9 +15,9 @@ module mem_agent_maxi
     parameter ADDR_WIDTH         = 32 
   , parameter DATA_WIDTH         = 64 
   , parameter RD_ADDR_BASE       = 32'h4000_0000 // 1 GB
-  , parameter RD_ADDR_HIGH       = 32'h5000_0000 // 1 GB + 256 MB
+  , parameter RD_ADDR_HIGH       = 32'h8000_0000 // 2 GB
   , parameter WR_ADDR_BASE       = 32'h4000_0000 // 1 GB
-  , parameter WR_ADDR_HIGH       = 32'h5000_0000 // 1 GB + 256 MB
+  , parameter WR_ADDR_HIGH       = 32'h8000_0000 // 2 GB
   , parameter RD_OUTSTANDING_MAX = 16
   , parameter WR_OUTSTANDING_MAX = 16
   , parameter DBG_CNT_BITS       = 32
